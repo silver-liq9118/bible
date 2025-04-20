@@ -1,14 +1,44 @@
-final Map<String, List<String>> bibleVerses = {
-  'morning': [
-    '시편 5:3 — 여호와여 아침에 주께서 나의 소리를 들으시리이다.',
-    '마태복음 6:33 — 그런즉 너희는 먼저 그의 나라와 그의 의를 구하라.'
-  ],
-  'afternoon': [
-    '시편 55:17 — 저녁과 아침과 정오에 내가 근심하여 탄식하리니.',
-    '요한복음 14:27 — 평안을 너희에게 끼치노니 곧 나의 평안을 너희에게 주노라.'
-  ],
-  'evening': [
-    '시편 4:8 — 내가 평안히 눕고 자기도 하리니 나를 안전히 살게 하시는 이는 오직 여호와이시니이다.',
-    '이사야 40:31 — 오직 여호와를 앙망하는 자는 새 힘을 얻으리니.'
-  ]
-};
+// 📁 lib/bible_data.dart
+import 'dart:convert';
+import 'package:flutter/services.dart';
+
+class BibleVerse {
+  final String book;
+  final int chapter;
+  final int verse;
+  final String text;
+
+  BibleVerse({
+    required this.book,
+    required this.chapter,
+    required this.verse,
+    required this.text,
+  });
+
+  factory BibleVerse.fromJson(String book, int chapter, Map<String, dynamic> json) {
+    return BibleVerse(
+      book: book,
+      chapter: chapter,
+      verse: json['verse'],
+      text: json['text'],
+    );
+  }
+}
+
+Future<List<BibleVerse>> loadBibleVersesFromStructuredJson(String path) async {
+  final jsonString = await rootBundle.loadString(path);
+  final Map<String, dynamic> jsonData = json.decode(jsonString);
+  final List<BibleVerse> verses = [];
+
+  for (final book in jsonData['books']) {
+    final String bookName = book['name'];
+    for (final chapter in book['chapters']) {
+      final int chapterNumber = chapter['chapter'];
+      for (final Map<String, dynamic> verse in chapter['verses']) {
+        verses.add(BibleVerse.fromJson(bookName, chapterNumber, verse));
+      }
+    }
+  }
+
+  return verses;
+}

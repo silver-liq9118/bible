@@ -6,19 +6,36 @@ class FavoritePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+    final height = MediaQuery.of(context).size.height;
+
+    final padding = width * 0.04;
+    final margin = width * 0.03;
+    final fontSize = width * 0.045;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('즐겨찾기')),
+      appBar: AppBar(
+        title: Text(
+          '즐겨찾기',
+          style: TextStyle(fontSize: width * 0.05),
+        ),
+      ),
       body: favorites.isEmpty
-          ? const Center(child: Text('즐겨찾기한 말씀이 없습니다.'))
+          ? Center(
+        child: Text(
+          '즐겨찾기한 말씀이 없습니다.',
+          style: TextStyle(fontSize: fontSize),
+        ),
+      )
           : ListView(
         children: favorites.map((verse) {
           return Card(
-            margin: const EdgeInsets.all(12),
+            margin: EdgeInsets.all(margin),
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: EdgeInsets.all(padding),
               child: Text(
                 verse,
-                style: const TextStyle(fontSize: 18),
+                style: TextStyle(fontSize: fontSize),
               ),
             ),
           );

@@ -3,8 +3,13 @@ import 'package:flutter/material.dart';
 import 'dart:math';
 import 'bible_data.dart';
 import 'info.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 
-void main() => runApp(const BibleApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await MobileAds.instance.initialize();
+  runApp(const BibleApp());
+}
 
 class BibleApp extends StatelessWidget {
   const BibleApp({super.key});
@@ -46,6 +51,8 @@ class _HomePageState extends State<HomePage> {
   final Set<BibleVerse> favorites = {};
   int _selectedIndex = 0;
 
+  BannerAd? _bannerAd;
+
   final Map<String, String> bookNameMap = {
     'Genesis': '창세기', 'Exodus': '출애굽기', 'Leviticus': '레위기',
     'Numbers': '민수기', 'Deuteronomy': '신명기', 'Joshua': '여호수아',
@@ -77,18 +84,36 @@ class _HomePageState extends State<HomePage> {
     'I Timothy': '디모데전서', 'II Timothy': '디모데후서',
     'I Peter': '베드로전서', 'II Peter': '베드로후서',
     'I John': '요한일서', 'II John': '요한이서', 'III John': '요한삼서',
-    'Revelation of John' :'요한계시록'
+    'Revelation of John': '요한계시록'
   };
 
   @override
   void initState() {
     super.initState();
+
+    _loadBannerAd();
+
     loadBibleVersesFromStructuredJson('assets/KorRV.json').then((verses) {
       setState(() {
         allVerses = verses;
         _currentVerse = verses.isNotEmpty ? verses[Random().nextInt(verses.length)] : null;
       });
     });
+  }
+
+  void _loadBannerAd() {
+    _bannerAd = BannerAd(
+      adUnitId: 'ca-app-pub-3940256099942544/6300978111', // 실제 배포 시 YOUR_AD_UNIT_ID 로 교체
+      size: AdSize.banner,
+      request: const AdRequest(),
+      listener: const BannerAdListener(),
+    )..load();
+  }
+
+  @override
+  void dispose() {
+    _bannerAd?.dispose();
+    super.dispose();
   }
 
   void refreshVerse() {
@@ -119,125 +144,140 @@ class _HomePageState extends State<HomePage> {
     final BibleVerse? verse = _currentVerse;
 
     Widget body;
-    if (_selectedIndex == 0) {
-      body = verse == null
-          ? const Center(child: CircularProgressIndicator())
-          : Center(
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: w * 0.06),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(w * 0.03),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black12,
-                  offset: Offset(0, 0),
-                  blurRadius: w * 0.08,
-                  spreadRadius: w * 0.03,
-                )
-              ],
+    if (_selectedIndex == 0 && verse != null) {
+      body = Column(
+        children: [
+          SizedBox(height: w*0.15),
+          if (_bannerAd != null)
+            SizedBox(
+              width: _bannerAd!.size.width.toDouble(),
+              height: _bannerAd!.size.height.toDouble(),
+              child: AdWidget(ad: _bannerAd!),
             ),
-            padding: EdgeInsets.symmetric(horizontal: w * 0.04, vertical: h * 0.015),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      '${bookNameMap[verse.book] ?? verse.book} ${verse.chapter}:${verse.verse}',
-                      style: TextStyle(
-                        fontSize: w * 0.06,
-                        fontWeight: FontWeight.w700,
+          Expanded(
+            child: Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: w * 0.06),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(w * 0.03),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black12,
+                        offset: Offset(0, 0),
+                        blurRadius: w * 0.08,
+                        spreadRadius: w * 0.03,
+                      )
+                    ],
+                  ),
+                  padding: EdgeInsets.symmetric(horizontal: w * 0.04, vertical: h * 0.015),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            '${bookNameMap[verse.book] ?? verse.book} ${verse.chapter}:${verse.verse}',
+                            style: TextStyle(
+                              fontSize: w * 0.06,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          IconButton(
+                            icon: Icon(
+                              favorites.contains(verse) ? Icons.favorite : Icons.favorite_border,
+                              color: Colors.grey,
+                              size: w * 0.065,
+                            ),
+                            onPressed: () => toggleFavorite(),
+                          ),
+                        ],
                       ),
-                    ),
-                    IconButton(
-                      icon: Icon(
-                        favorites.contains(verse)
-                            ? Icons.favorite
-                            : Icons.favorite_border,
-                        color: Colors.grey,
-                        size: w * 0.065,
+                      Padding(
+                        padding: EdgeInsets.only(bottom: h * 0.015),
+                        child: Text(
+                          verse.text,
+                          style: TextStyle(
+                            fontSize: w * 0.05,
+                            fontWeight: FontWeight.w300,
+                          ),
+                          textAlign: TextAlign.left,
+                        ),
                       ),
-                      onPressed: () => toggleFavorite(),
-                    ),
-                  ],
-                ),
-                Padding(
-                  padding: EdgeInsets.only(bottom: h * 0.015),
-                  child: Text(
-                    verse.text,
-                    style: TextStyle(
-                      fontSize: w * 0.05,
-                      fontWeight: FontWeight.w300,
-                    ),
-                    textAlign: TextAlign.left,
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          IconButton(
+                            icon: Icon(Icons.refresh, size: w * 0.065),
+                            onPressed: refreshVerse,
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    IconButton(
-                      icon: Icon(Icons.refresh, size: w * 0.065),
-                      onPressed: refreshVerse,
-                    ),
-                  ],
-                ),
-              ],
+              ),
             ),
           ),
-        ),
+        ],
       );
     } else if (_selectedIndex == 1) {
       body = Scaffold(
-        appBar: AppBar(title: Text('즐겨찾기', style: TextStyle(fontSize: w * 0.05))),
+        appBar: AppBar(
+            title: Text('즐겨찾기',
+                style: TextStyle(fontSize: w * 0.05, fontWeight: FontWeight.bold))),
         body: favorites.isEmpty
             ? Center(child: Text('즐겨찾기한 말씀이 없습니다.', style: TextStyle(fontSize: w * 0.045)))
             : ListView(
           padding: EdgeInsets.all(w * 0.04),
-          children: favorites.map((v) => Container(
-            margin: EdgeInsets.only(bottom: h * 0.02),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(w * 0.03),
-              border: Border.all(color: Colors.grey.shade200),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.shade200,
-                  offset: Offset(0, 0),
-                  blurRadius: w * 0.05,
-                  spreadRadius: w * 0.01,
-                )
-              ],
-            ),
-            padding: EdgeInsets.all(w * 0.05),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      '${bookNameMap[v.book] ?? v.book} ${v.chapter}:${v.verse}',
-                      style: TextStyle(
-                        fontSize: w * 0.05,
-                        fontWeight: FontWeight.bold,
+          children: favorites.map((v) {
+            return Container(
+              margin: EdgeInsets.only(bottom: h * 0.02),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(w * 0.03),
+                border: Border.all(color: Colors.grey.shade200),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.shade200,
+                    offset: Offset(0, 0),
+                    blurRadius: w * 0.05,
+                    spreadRadius: w * 0.01,
+                  )
+                ],
+              ),
+              padding: EdgeInsets.all(w * 0.05),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '${bookNameMap[v.book] ?? v.book} ${v.chapter}:${v.verse}',
+                        style: TextStyle(
+                          fontSize: w * 0.05,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                    Icon(Icons.favorite, color: Colors.grey, size: w * 0.06),
-                  ],
-                ),
-                SizedBox(height: h * 0.01),
-                Text(v.text, style: TextStyle(fontSize: w * 0.045)),
-              ],
-            ),
-          )).toList(),
+                      Icon(Icons.favorite, color: Colors.grey, size: w * 0.06),
+                    ],
+                  ),
+                  SizedBox(height: h * 0.01),
+                  Text(v.text, style: TextStyle(fontSize: w * 0.045)),
+                ],
+              ),
+            );
+          }).toList(),
         ),
       );
     } else {
       body = Scaffold(
-        appBar: AppBar(title: Text('정보', style: TextStyle(fontSize: w * 0.05))),
+        appBar: AppBar(
+            title: Text('정보',
+                style: TextStyle(fontSize: w * 0.05, fontWeight: FontWeight.bold))),
         body: const InfoPage(),
       );
     }

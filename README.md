@@ -1,16 +1,11 @@
-# bible
+# 개인정보 처리방침 (Privacy Policy)
 
-bible
+본 앱(오늘의성경, Today’s Bible)은 사용자의 어떠한 개인정보도 수집, 저장, 전송하지 않습니다.
 
-## Getting Started
+- 본 앱은 로그인 기능이 없으며, 서버와의 통신 없이 앱 내에서 모든 기능이 실행됩니다.
+- 광고(Google AdMob)는 Google의 광고 정책에 따라 제공되며, 해당 SDK에서 사용자 데이터를 수집할 수 있습니다. 이에 대한 자세한 내용은 [Google의 개인정보처리방침](https://policies.google.com/privacy)을 참고해주시기 바랍니다.
+- 본 앱은 사용자의 위치, 연락처, 사진, 카메라 등 어떠한 민감 정보에도 접근하지 않습니다.
 
-This project is a starting point for a Flutter application.
+**문의:** goodtooday@gmail.com
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+최종 업데이트일: 2025년 4월 21일

@@ -161,7 +161,6 @@
 				C8A242C5C89E99F3075FBF47 /* Pods-RunnerTests.release.xcconfig */,
 				EE234191C873AE6F4808B9FE /* Pods-RunnerTests.profile.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
@@ -702,7 +701,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.bible.bible;
+				PRODUCT_BUNDLE_IDENTIFIER = com.goodtooday.todaysbible;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;

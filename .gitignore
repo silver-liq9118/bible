@@ -43,3 +43,43 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Flutter/Dart 관련
+.dart_tool/
+.packages
+.pub-cache/
+build/
+.idea/
+.vscode/
+.flutter-plugins
+.flutter-plugins-dependencies
+.melos_tool/
+generated_plugin_registrant.dart
+
+# iOS
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/.symlinks
+ios/Pods
+ios/Runner.xcworkspace
+ios/build/
+ios/.generated/
+
+# Android
+android/.gradle/
+android/captures/
+android/.idea
+android/build/
+
+# 환경설정 및 보안
+.env
+key.properties
+android/release.keystore
+
+# 기타
+*.iml
+*.log
+*.lock
+*.tmp
+*.swp
+.DS_Store

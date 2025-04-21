@@ -1,0 +1,1 @@
+/Users/eunju/Documents/GitHub/bible/build/app/intermediates/cxx/Debug/n654s5r2/obj/arm64-v8a

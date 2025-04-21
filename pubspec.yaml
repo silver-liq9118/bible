@@ -1,5 +1,5 @@
-name: bible
-description: "bible"
+name: TodaysBible
+description: "Today's Bible"
 
 publish_to: 'none'
 

@@ -1,0 +1,2 @@
+/Users/eunju/Documents/GitHub/bible/android/app/.cxx/Debug/n654s5r2/armeabi-v7a/CMakeFiles/edit_cache.dir
+/Users/eunju/Documents/GitHub/bible/android/app/.cxx/Debug/n654s5r2/armeabi-v7a/CMakeFiles/rebuild_cache.dir

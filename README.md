@@ -6,6 +6,6 @@
 - 광고(Google AdMob)는 Google의 광고 정책에 따라 제공되며, 해당 SDK에서 사용자 데이터를 수집할 수 있습니다. 이에 대한 자세한 내용은 [Google의 개인정보처리방침](https://policies.google.com/privacy)을 참고해주시기 바랍니다.
 - 본 앱은 사용자의 위치, 연락처, 사진, 카메라 등 어떠한 민감 정보에도 접근하지 않습니다.
 
-**문의:** goodtooday@gmail.com
+**문의:** sonprojecta@gmail.com
 
 최종 업데이트일: 2025년 4월 21일

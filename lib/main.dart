@@ -1,6 +1,7 @@
 // 파일: lib/main.dart
 import 'package:flutter/material.dart';
 import 'dart:math';
+import 'package:share_plus/share_plus.dart';
 import 'bible_data.dart';
 import 'info.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -50,7 +51,7 @@ class _HomePageState extends State<HomePage> {
   BibleVerse? _currentVerse;
   final Set<BibleVerse> favorites = {};
   int _selectedIndex = 0;
-
+  bool _showFullChapter = false;
   BannerAd? _bannerAd;
 
   final Map<String, String> bookNameMap = {
@@ -90,9 +91,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-
     _loadBannerAd();
-
     loadBibleVersesFromStructuredJson('assets/KorRV.json').then((verses) {
       setState(() {
         allVerses = verses;
@@ -103,7 +102,7 @@ class _HomePageState extends State<HomePage> {
 
   void _loadBannerAd() {
     _bannerAd = BannerAd(
-      adUnitId: 'ca-app-pub-3940256099942544/6300978111', // 실제 배포 시 YOUR_AD_UNIT_ID 로 교체
+      adUnitId: 'ca-app-pub-3940256099942544/6300978111',
       size: AdSize.banner,
       request: const AdRequest(),
       listener: const BannerAdListener(),
@@ -119,9 +118,15 @@ class _HomePageState extends State<HomePage> {
   void refreshVerse() {
     setState(() {
       if (allVerses.isNotEmpty) {
+        _showFullChapter = false;
         _currentVerse = allVerses[Random().nextInt(allVerses.length)];
       }
     });
+  }
+
+  List<BibleVerse> getCurrentChapterVerses() {
+    if (_currentVerse == null) return [];
+    return allVerses.where((v) => v.book == _currentVerse!.book && v.chapter == _currentVerse!.chapter).toList();
   }
 
   void toggleFavorite([BibleVerse? verse]) {
@@ -137,6 +142,15 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  void shareVerse(BibleVerse verse) {
+    final bookKorean = bookNameMap[verse.book] ?? verse.book;
+    final message = '오늘의 성경\n'
+        '"$bookKorean ${verse.chapter}:${verse.verse} ${verse.text}" 을(를) 공유합니다.\n'
+        '아멘 🙏\n'
+        '오늘의성경읽기 = https://your-appstore-link.com';
+    Share.share(message);
+  }
+
   @override
   Widget build(BuildContext context) {
     final double w = MediaQuery.of(context).size.width;
@@ -145,9 +159,10 @@ class _HomePageState extends State<HomePage> {
 
     Widget body;
     if (_selectedIndex == 0 && verse != null) {
+      final chapterVerses = getCurrentChapterVerses();
       body = Column(
         children: [
-          SizedBox(height: w*0.15),
+          SizedBox(height: w * 0.15),
           if (_bannerAd != null)
             SizedBox(
               width: _bannerAd!.size.width.toDouble(),
@@ -188,7 +203,7 @@ class _HomePageState extends State<HomePage> {
                           IconButton(
                             icon: Icon(
                               favorites.contains(verse) ? Icons.favorite : Icons.favorite_border,
-                              color: Colors.grey,
+                              color: Color(0xFFF6909D),
                               size: w * 0.065,
                             ),
                             onPressed: () => toggleFavorite(),
@@ -197,7 +212,33 @@ class _HomePageState extends State<HomePage> {
                       ),
                       Padding(
                         padding: EdgeInsets.only(bottom: h * 0.015),
-                        child: Text(
+                        child: _showFullChapter
+                            ? SizedBox(
+                          height: h * 0.3, // 카드 내부에서만 스크롤되도록 높이 고정
+                          child: Scrollbar(
+                            thumbVisibility: true,
+                            child: SingleChildScrollView(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: chapterVerses.map((v) => Padding(
+                                  padding: EdgeInsets.only(bottom: h * 0.006),
+                                  child: Text(
+                                    v.verse == verse.verse
+                                        ? '👉 ${v.verse}. ${v.text}'
+                                        : '${v.verse}. ${v.text}',
+                                    style: TextStyle(
+                                      fontSize: w * 0.045,
+                                      fontWeight: v.verse == verse.verse
+                                          ? FontWeight.bold
+                                          : FontWeight.w300,
+                                    ),
+                                  ),
+                                )).toList(),
+                              ),
+                            ),
+                          ),
+                        )
+                            : Text(
                           verse.text,
                           style: TextStyle(
                             fontSize: w * 0.05,
@@ -206,12 +247,27 @@ class _HomePageState extends State<HomePage> {
                           textAlign: TextAlign.left,
                         ),
                       ),
+                      TextButton(
+                        onPressed: () {
+                          setState(() {
+                            _showFullChapter = !_showFullChapter;
+                          });
+                        },
+                        child: Text(
+                          _showFullChapter ? '간략히 보기' : '${verse.chapter}장 전체 보기',
+                          style: TextStyle(fontSize: w * 0.035, color: Colors.blueGrey),
+                        ),
+                      ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           IconButton(
                             icon: Icon(Icons.refresh, size: w * 0.065),
                             onPressed: refreshVerse,
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.share, size: w * 0.065),
+                            onPressed: () => shareVerse(verse),
                           ),
                         ],
                       ),
@@ -222,8 +278,10 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
         ],
+
       );
-    } else if (_selectedIndex == 1) {
+    }
+    else if (_selectedIndex == 1) {
       body = Scaffold(
         appBar: AppBar(
             title: Text('즐겨찾기',
@@ -262,7 +320,7 @@ class _HomePageState extends State<HomePage> {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      Icon(Icons.favorite, color: Colors.grey, size: w * 0.06),
+                      Icon(Icons.favorite, color: Color(0xFFF6909D), size: w * 0.06),
                     ],
                   ),
                   SizedBox(height: h * 0.01),
@@ -273,17 +331,22 @@ class _HomePageState extends State<HomePage> {
           }).toList(),
         ),
       );
-    } else {
-      body = Scaffold(
-        appBar: AppBar(
-            title: Text('정보',
-                style: TextStyle(fontSize: w * 0.05, fontWeight: FontWeight.bold))),
-        body: const InfoPage(),
-      );
+    }
+    else {
+      body = const InfoPage();
     }
 
     return Scaffold(
-      body: body,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFFE4F1F6), Color(0xFFFDFDFD)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: body,
+      ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: (index) => setState(() => _selectedIndex = index),

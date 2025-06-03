@@ -5,12 +5,23 @@ import 'package:share_plus/share_plus.dart';
 import 'bible_data.dart';
 import 'info.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'ChapterViewPage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+Set<String> favorites = {};
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await MobileAds.instance.initialize();
+
   runApp(const BibleApp());
 }
+
+Future<void> saveFavorites() async {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.setStringList('favorites', favorites.toList());
+}
+
 
 class BibleApp extends StatelessWidget {
   const BibleApp({super.key});
@@ -20,7 +31,7 @@ class BibleApp extends StatelessWidget {
     return MaterialApp(
       title: 'Bible Verse App',
       theme: ThemeData.light().copyWith(
-        scaffoldBackgroundColor: Colors.white,
+        scaffoldBackgroundColor: Colors.transparent,
         textTheme: ThemeData.light().textTheme.apply(
           fontFamily: 'BookkGothic',
         ),
@@ -147,7 +158,7 @@ class _HomePageState extends State<HomePage> {
     final message = '오늘의 성경\n'
         '"$bookKorean ${verse.chapter}:${verse.verse} ${verse.text}" 을(를) 공유합니다.\n'
         '아멘 🙏\n'
-        '오늘의성경읽기 = https://your-appstore-link.com';
+        '오늘의성경읽기 = https://apps.apple.com/kr/app/%EC%98%A4%EB%8A%98%EC%9D%98-%EC%84%B1%EA%B2%BD-%ED%95%9C-%EA%B5%AC%EC%A0%88/id6744880260';
     Share.share(message);
   }
 
@@ -214,26 +225,26 @@ class _HomePageState extends State<HomePage> {
                         padding: EdgeInsets.only(bottom: h * 0.015),
                         child: _showFullChapter
                             ? SizedBox(
-                          height: h * 0.3, // 카드 내부에서만 스크롤되도록 높이 고정
+                          height: h * 0.3,
                           child: Scrollbar(
                             thumbVisibility: true,
                             child: SingleChildScrollView(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
-                                children: chapterVerses.map((v) => Padding(
-                                  padding: EdgeInsets.only(bottom: h * 0.006),
-                                  child: Text(
-                                    v.verse == verse.verse
-                                        ? '👉 ${v.verse}. ${v.text}'
-                                        : '${v.verse}. ${v.text}',
-                                    style: TextStyle(
-                                      fontSize: w * 0.045,
-                                      fontWeight: v.verse == verse.verse
-                                          ? FontWeight.bold
-                                          : FontWeight.w300,
+                                children: chapterVerses.map((v) {
+                                  final isTarget = v.verse == verse.verse;
+                                  return Container(
+                                    color: isTarget ? Colors.yellow.shade100 : null,
+                                    padding: EdgeInsets.symmetric(vertical: h * 0.005),
+                                    child: Text(
+                                      '${v.verse}. ${v.text}',
+                                      style: TextStyle(
+                                        fontSize: w * 0.045,
+                                        fontWeight: isTarget ? FontWeight.bold : FontWeight.w300,
+                                      ),
                                     ),
-                                  ),
-                                )).toList(),
+                                  );
+                                }).toList(),
                               ),
                             ),
                           ),
@@ -284,49 +295,23 @@ class _HomePageState extends State<HomePage> {
     else if (_selectedIndex == 1) {
       body = Scaffold(
         appBar: AppBar(
+            backgroundColor: Colors.transparent,
+
             title: Text('즐겨찾기',
-                style: TextStyle(fontSize: w * 0.05, fontWeight: FontWeight.bold))),
+                style: TextStyle(
+                    fontSize: w * 0.05, fontWeight: FontWeight.bold))),
         body: favorites.isEmpty
-            ? Center(child: Text('즐겨찾기한 말씀이 없습니다.', style: TextStyle(fontSize: w * 0.045)))
+            ? Center(child: Text(
+            '즐겨찾기한 말씀이 없습니다.', style: TextStyle(fontSize: w * 0.045)))
             : ListView(
           padding: EdgeInsets.all(w * 0.04),
           children: favorites.map((v) {
-            return Container(
-              margin: EdgeInsets.only(bottom: h * 0.02),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(w * 0.03),
-                border: Border.all(color: Colors.grey.shade200),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.shade200,
-                    offset: Offset(0, 0),
-                    blurRadius: w * 0.05,
-                    spreadRadius: w * 0.01,
-                  )
-                ],
-              ),
-              padding: EdgeInsets.all(w * 0.05),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        '${bookNameMap[v.book] ?? v.book} ${v.chapter}:${v.verse}',
-                        style: TextStyle(
-                          fontSize: w * 0.05,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Icon(Icons.favorite, color: Color(0xFFF6909D), size: w * 0.06),
-                    ],
-                  ),
-                  SizedBox(height: h * 0.01),
-                  Text(v.text, style: TextStyle(fontSize: w * 0.045)),
-                ],
-              ),
+            return FavoriteCard(
+              verse: v,
+              w: w,
+              h: h,
+              allVerses: allVerses,
+              bookNameMap: bookNameMap,
             );
           }).toList(),
         ),
@@ -357,6 +342,101 @@ class _HomePageState extends State<HomePage> {
           BottomNavigationBarItem(icon: Icon(Icons.favorite), label: '즐겨찾기'),
           BottomNavigationBarItem(icon: Icon(Icons.info), label: '정보'),
         ],
+      ),
+    );
+  }
+}
+class FavoriteCard extends StatefulWidget {
+  final BibleVerse verse;
+  final double w;
+  final double h;
+  final List<BibleVerse> allVerses;
+  final Map<String, String> bookNameMap;
+
+  const FavoriteCard({
+    super.key,
+    required this.verse,
+    required this.w,
+    required this.h,
+    required this.allVerses,
+    required this.bookNameMap,
+  });
+
+  @override
+  State<FavoriteCard> createState() => _FavoriteCardState();
+}
+
+class _FavoriteCardState extends State<FavoriteCard> {
+  double _scale = 1.0;
+
+  void _onTap() async {
+    setState(() => _scale = 0.97);
+    await Future.delayed(const Duration(milliseconds: 80));
+    setState(() => _scale = 1.0);
+
+    final chapterVerses = widget.allVerses
+        .where((v) => v.book == widget.verse.book && v.chapter == widget.verse.chapter)
+        .toList();
+
+    final reference = '${widget.verse.book} ${widget.verse.chapter}:${widget.verse.verse}';
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ChapterViewPage(
+          verseReference: reference,
+          chapterVerses: chapterVerses,
+          bookNameMap: widget.bookNameMap,
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedScale(
+      scale: _scale,
+      duration: const Duration(milliseconds: 100),
+      curve: Curves.easeInOut,
+      child: GestureDetector(
+        onTap: _onTap,
+        child: Container(
+          margin: EdgeInsets.only(bottom: widget.h * 0.02),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(widget.w * 0.03),
+            border: Border.all(color: Colors.grey.shade200),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.shade200,
+                offset: const Offset(0, 0),
+                blurRadius: widget.w * 0.05,
+                spreadRadius: widget.w * 0.01,
+              )
+            ],
+          ),
+          padding: EdgeInsets.all(widget.w * 0.05),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    '${widget.bookNameMap[widget.verse.book] ?? widget.verse.book} ${widget.verse.chapter}:${widget.verse.verse}',
+                    style: TextStyle(
+                      fontSize: widget.w * 0.05,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Icon(Icons.favorite, color: const Color(0xFFF6909D), size: widget.w * 0.06),
+                ],
+              ),
+              SizedBox(height: widget.h * 0.01),
+              Text(widget.verse.text, style: TextStyle(fontSize: widget.w * 0.045)),
+            ],
+          ),
+        ),
       ),
     );
   }

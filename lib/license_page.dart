@@ -59,7 +59,7 @@ of this software and associated documentation files...
         'license': '''BSD-style License
 
 Copyright 2008 Google Inc. All Rights Reserved.
-(전체 라이선스는 https://github.com/dart-lang/intl/blob/main/LICENSE 참조)'''
+(전체: https://github.com/dart-lang/intl/blob/main/LICENSE 참조)'''
       },
       {
         'title': 'flutter_launcher_icons',
@@ -80,19 +80,25 @@ of this software and associated documentation files...
     ];
 
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text(
           '오픈소스 라이선스',
           style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: w * 0.05,
+            color: Colors.black,
           ),
         ),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        elevation: 0,
       ),
       body: ListView.separated(
         padding: EdgeInsets.symmetric(horizontal: w * 0.05, vertical: h * 0.01),
         itemCount: items.length,
-        separatorBuilder: (context, index) => Divider(color: Colors.grey.shade300),
+        separatorBuilder: (context, index) =>
+            Divider(color: Colors.grey.shade300),
         itemBuilder: (context, index) {
           final item = items[index];
           return ListTile(
@@ -101,9 +107,10 @@ of this software and associated documentation files...
               style: TextStyle(
                 fontSize: w * 0.045,
                 fontWeight: FontWeight.w500,
+                color: Colors.black,
               ),
             ),
-            trailing: const Icon(Icons.chevron_right),
+            trailing: const Icon(Icons.chevron_right, color: Colors.black),
             onTap: () {
               Navigator.push(
                 context,

@@ -11,11 +11,19 @@ class LicenseDetailPage extends StatelessWidget {
     final w = MediaQuery.of(context).size.width;
 
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
         title: Text(
           title,
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: w * 0.05),
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: w * 0.05,
+            color: Colors.black,
+          ),
         ),
+        elevation: 0,
       ),
       body: Padding(
         padding: EdgeInsets.all(w * 0.05),
@@ -26,7 +34,7 @@ class LicenseDetailPage extends StatelessWidget {
               fontSize: w * 0.035,
               height: 1.6,
               fontFamily: 'Courier', // monospace font
-              color: Colors.black87,
+              color: Colors.black, // 명시적으로 검정색 지정
             ),
           ),
         ),

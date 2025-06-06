@@ -9,6 +9,7 @@ import 'ChapterViewPage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 Set<String> favorites = {};
+double _fontSizeFactor = 1.0;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,6 +17,7 @@ void main() async {
 
   runApp(const BibleApp());
 }
+
 
 Future<void> saveFavorites() async {
   final prefs = await SharedPreferences.getInstance();
@@ -111,6 +113,19 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  void increaseFontSize() {
+    setState(() {
+      _fontSizeFactor = (_fontSizeFactor + 0.1).clamp(0.8, 2.0);
+    });
+  }
+
+  void decreaseFontSize() {
+    setState(() {
+      _fontSizeFactor = (_fontSizeFactor - 0.1).clamp(0.8, 2.0);
+    });
+  }
+
+
   void _loadBannerAd() {
     _bannerAd = BannerAd(
       adUnitId: 'ca-app-pub-3940256099942544/6300978111',
@@ -184,46 +199,47 @@ class _HomePageState extends State<HomePage> {
             child: Center(
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: w * 0.06),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(w * 0.03),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black12,
-                        offset: Offset(0, 0),
-                        blurRadius: w * 0.08,
-                        spreadRadius: w * 0.03,
-                      )
-                    ],
-                  ),
-                  padding: EdgeInsets.symmetric(horizontal: w * 0.04, vertical: h * 0.015),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            '${bookNameMap[verse.book] ?? verse.book} ${verse.chapter}:${verse.verse}',
-                            style: TextStyle(
-                              fontSize: w * 0.06,
-                              fontWeight: FontWeight.w700,
+                child: SingleChildScrollView(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(w * 0.03),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black12,
+                          offset: Offset(0, 0),
+                          blurRadius: w * 0.08,
+                          spreadRadius: w * 0.03,
+                        )
+                      ],
+                    ),
+                    padding: EdgeInsets.symmetric(horizontal: w * 0.04, vertical: h * 0.015),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // 제목 + 하트
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              '${bookNameMap[verse.book] ?? verse.book} ${verse.chapter}:${verse.verse}',
+                              style: TextStyle(
+                                fontSize: w * 0.06 * _fontSizeFactor,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
-                          ),
-                          IconButton(
-                            icon: Icon(
-                              favorites.contains(verse) ? Icons.favorite : Icons.favorite_border,
-                              color: Color(0xFFF6909D),
-                              size: w * 0.065,
+                            IconButton(
+                              icon: Icon(
+                                favorites.contains(verse) ? Icons.favorite : Icons.favorite_border,
+                                color: Color(0xFFF6909D),
+                                size: w * 0.065,
+                              ),
+                              onPressed: () => toggleFavorite(),
                             ),
-                            onPressed: () => toggleFavorite(),
-                          ),
-                        ],
-                      ),
-                      Padding(
-                        padding: EdgeInsets.only(bottom: h * 0.015),
-                        child: _showFullChapter
+                          ],
+                        ),
+                        SizedBox(height: h * 0.01),
+                        _showFullChapter
                             ? SizedBox(
                           height: h * 0.3,
                           child: Scrollbar(
@@ -239,9 +255,12 @@ class _HomePageState extends State<HomePage> {
                                     child: Text(
                                       '${v.verse}. ${v.text}',
                                       style: TextStyle(
-                                        fontSize: w * 0.045,
+                                        fontSize: w * 0.045 * _fontSizeFactor,
                                         fontWeight: isTarget ? FontWeight.bold : FontWeight.w300,
+                                        color: isTarget ? Colors.black87 : Colors.black87.withOpacity(0.8),
                                       ),
+                                      softWrap: true,
+                                      overflow: TextOverflow.visible,
                                     ),
                                   );
                                 }).toList(),
@@ -252,46 +271,69 @@ class _HomePageState extends State<HomePage> {
                             : Text(
                           verse.text,
                           style: TextStyle(
-                            fontSize: w * 0.05,
+                            fontSize: w * 0.05 * _fontSizeFactor,
                             fontWeight: FontWeight.w300,
                           ),
+                          softWrap: true,
+                          overflow: TextOverflow.visible,
                           textAlign: TextAlign.left,
                         ),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          setState(() {
-                            _showFullChapter = !_showFullChapter;
-                          });
-                        },
-                        child: Text(
-                          _showFullChapter ? '간략히 보기' : '${verse.chapter}장 전체 보기',
-                          style: TextStyle(fontSize: w * 0.035, color: Colors.blueGrey),
+                        SizedBox(height: h * 0.008),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: TextButton(
+                            onPressed: () {
+                              setState(() {
+                                _showFullChapter = !_showFullChapter;
+                              });
+                            },
+                            child: Text(
+                              _showFullChapter ? '간략히 보기' : '${verse.chapter}장 전체 보기',
+                              style: TextStyle(
+                                fontSize: w * 0.035 * _fontSizeFactor,
+                                color: Colors.blueGrey,
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          IconButton(
-                            icon: Icon(Icons.refresh, size: w * 0.065),
-                            onPressed: refreshVerse,
-                          ),
-                          IconButton(
-                            icon: Icon(Icons.share, size: w * 0.065),
-                            onPressed: () => shareVerse(verse),
-                          ),
-                        ],
-                      ),
-                    ],
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            IconButton(
+                              icon: Icon(Icons.refresh, size: w * 0.065),
+                              onPressed: refreshVerse,
+                            ),
+                            IconButton(
+                              icon: Icon(Icons.share, size: w * 0.065),
+                              onPressed: () => shareVerse(verse),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
           ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              IconButton(
+                icon: Icon(Icons.remove, size: w * 0.06),
+                onPressed: decreaseFontSize,
+              ),
+              Text('글자 크기', style: TextStyle(fontSize: w * 0.04)),
+              IconButton(
+                icon: Icon(Icons.add, size: w * 0.06),
+                onPressed: increaseFontSize,
+              ),
+            ],
+          ),
         ],
-
       );
     }
+
     else if (_selectedIndex == 1) {
       body = Scaffold(
         appBar: AppBar(
@@ -312,6 +354,13 @@ class _HomePageState extends State<HomePage> {
               h: h,
               allVerses: allVerses,
               bookNameMap: bookNameMap,
+              fontSizeFactor: _fontSizeFactor,
+              onRemoveFavorite: (verseKey) {
+                setState(() {
+                  favorites.remove(verseKey);
+                  saveFavorites();
+                });
+              },
             );
           }).toList(),
         ),
@@ -346,12 +395,16 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
+
+
 class FavoriteCard extends StatefulWidget {
+  final double fontSizeFactor;
   final BibleVerse verse;
   final double w;
   final double h;
   final List<BibleVerse> allVerses;
   final Map<String, String> bookNameMap;
+  final void Function(BibleVerse verse)? onRemoveFavorite;
 
   const FavoriteCard({
     super.key,
@@ -360,84 +413,123 @@ class FavoriteCard extends StatefulWidget {
     required this.h,
     required this.allVerses,
     required this.bookNameMap,
+    required this.fontSizeFactor,
+    this.onRemoveFavorite,
   });
 
   @override
   State<FavoriteCard> createState() => _FavoriteCardState();
 }
 
-class _FavoriteCardState extends State<FavoriteCard> {
-  double _scale = 1.0;
-
-  void _onTap() async {
-    setState(() => _scale = 0.97);
-    await Future.delayed(const Duration(milliseconds: 80));
-    setState(() => _scale = 1.0);
-
-    final chapterVerses = widget.allVerses
-        .where((v) => v.book == widget.verse.book && v.chapter == widget.verse.chapter)
-        .toList();
-
-    final reference = '${widget.verse.book} ${widget.verse.chapter}:${widget.verse.verse}';
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => ChapterViewPage(
-          verseReference: reference,
-          chapterVerses: chapterVerses,
-          bookNameMap: widget.bookNameMap,
-        ),
-      ),
-    );
-  }
+class _FavoriteCardState extends State<FavoriteCard> with TickerProviderStateMixin {
+  bool _showFull = false;
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedScale(
-      scale: _scale,
-      duration: const Duration(milliseconds: 100),
-      curve: Curves.easeInOut,
-      child: GestureDetector(
-        onTap: _onTap,
-        child: Container(
-          margin: EdgeInsets.only(bottom: widget.h * 0.02),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(widget.w * 0.03),
-            border: Border.all(color: Colors.grey.shade200),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.shade200,
-                offset: const Offset(0, 0),
-                blurRadius: widget.w * 0.05,
-                spreadRadius: widget.w * 0.01,
-              )
+    final w = widget.w;
+    final h = widget.h;
+    final verse = widget.verse;
+
+    final reference = '${verse.book} ${verse.chapter}:${verse.verse}';
+    final verseText = verse.text;
+
+    final chapterVerses = widget.allVerses
+        .where((v) => v.book == verse.book && v.chapter == verse.chapter)
+        .toList();
+
+    return Container(
+      margin: EdgeInsets.only(bottom: h * 0.02),
+      padding: EdgeInsets.symmetric(vertical: h * 0.015, horizontal: w * 0.04),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(w * 0.03),
+        border: Border.all(color: Colors.grey.shade300),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.2),
+            spreadRadius: 1,
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 제목 + 하트
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center, // ✅ 세로 중앙 정렬
+            children: [
+              Expanded(
+                child: Text(
+                  '${widget.bookNameMap[verse.book] ?? verse.book} ${verse.chapter}:${verse.verse}',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: w * 0.05* widget.fontSizeFactor,
+                  ),
+                ),
+              ),
+              IconButton(
+                padding: EdgeInsets.zero, // ✅ 여백 제거
+                constraints: const BoxConstraints(), // ✅ 버튼 최소화
+                icon: Icon(Icons.favorite, color: const Color(0xFFF6909D), size: w * 0.06),
+                onPressed: () {
+                  if (widget.onRemoveFavorite != null) {
+                    widget.onRemoveFavorite!(verse);
+                  }
+                },
+              ),
             ],
           ),
-          padding: EdgeInsets.all(widget.w * 0.05),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    '${widget.bookNameMap[widget.verse.book] ?? widget.verse.book} ${widget.verse.chapter}:${widget.verse.verse}',
+          Text(
+            verseText,
+            style: TextStyle(fontSize: w * 0.042 * widget.fontSizeFactor),
+          ),
+          AnimatedSize(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+            alignment: Alignment.topCenter,
+            child: _showFull
+                ? Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: chapterVerses.map((v) {
+                final isTarget = v.verse == verse.verse;
+                return Container(
+                  color: isTarget ? Colors.yellow.shade100 : null,
+                  padding: EdgeInsets.symmetric(vertical: h * 0.005),
+                  child: Text(
+                    '${v.verse}. ${v.text}',
                     style: TextStyle(
-                      fontSize: widget.w * 0.05,
-                      fontWeight: FontWeight.bold,
+                      fontSize: w * 0.042* widget.fontSizeFactor,
+                      fontWeight: isTarget ? FontWeight.bold : FontWeight.w300,
+                      color: isTarget ? Colors.black87 : Colors.black87.withOpacity(0.8),
                     ),
                   ),
-                  Icon(Icons.favorite, color: const Color(0xFFF6909D), size: widget.w * 0.06),
-                ],
-              ),
-              SizedBox(height: widget.h * 0.01),
-              Text(widget.verse.text, style: TextStyle(fontSize: widget.w * 0.045)),
-            ],
+                );
+              }).toList(),
+            )
+                : const SizedBox.shrink(),
           ),
-        ),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.deepPurple,
+                textStyle: TextStyle(fontSize: w * 0.038 * widget.fontSizeFactor),
+              ),
+              onPressed: () {
+                setState(() {
+                  _showFull = !_showFull;
+                });
+              },
+              child: Text(_showFull ? '간략히 보기' : '전체 보기'),
+            ),
+          ),
+        ],
       ),
     );
   }
 }
+
+
+

@@ -219,19 +219,25 @@ class _HomePageState extends State<HomePage> {
                       children: [
                         // 제목 + 하트
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            Text(
-                              '${bookNameMap[verse.book] ?? verse.book} ${verse.chapter}:${verse.verse}',
-                              style: TextStyle(
-                                fontSize: w * 0.06 * _fontSizeFactor,
-                                fontWeight: FontWeight.w700,
+                            Expanded(
+                              child: Text(
+                                '${bookNameMap[verse.book] ?? verse.book} ${verse.chapter}:${verse.verse}',
+                                style: TextStyle(
+                                  fontSize: w * 0.06 * _fontSizeFactor,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                                softWrap: true,
+                                overflow: TextOverflow.visible,
                               ),
                             ),
                             IconButton(
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
                               icon: Icon(
                                 favorites.contains(verse) ? Icons.favorite : Icons.favorite_border,
-                                color: Color(0xFFF6909D),
+                                color: const Color(0xFFF6909D),
                                 size: w * 0.065,
                               ),
                               onPressed: () => toggleFavorite(),
@@ -319,17 +325,69 @@ class _HomePageState extends State<HomePage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              IconButton(
-                icon: Icon(Icons.remove, size: w * 0.06),
-                onPressed: decreaseFontSize,
+              // 🔽 감소 버튼
+              Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 6,
+                      offset: Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: IconButton(
+                  icon: Icon(Icons.remove, size: w * 0.06),
+                  onPressed: decreaseFontSize,
+                ),
               ),
-              Text('글자 크기', style: TextStyle(fontSize: w * 0.04)),
-              IconButton(
-                icon: Icon(Icons.add, size: w * 0.06),
-                onPressed: increaseFontSize,
+
+              // 🔤 텍스트
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: w * 0.05),
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _fontSizeFactor = 1.0; // 초기화
+                    });
+                  },
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: w * 0.04),
+                    child: Text(
+                      'Aa',
+                      style: TextStyle(
+                        fontSize: w * 0.05,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+              // 🔼 증가 버튼
+              Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 6,
+                      offset: Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: IconButton(
+                  icon: Icon(Icons.add, size: w * 0.06),
+                  onPressed: increaseFontSize,
+                ),
               ),
             ],
           ),
+          SizedBox(height: h * 0.02),
         ],
       );
     }

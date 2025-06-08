@@ -1,5 +1,6 @@
 // 파일: lib/main.dart
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'dart:math';
 import 'package:share_plus/share_plus.dart';
 import 'bible_data.dart';
@@ -12,6 +13,7 @@ Set<String> favorites = {};
 double _fontSizeFactor = 1.0;
 
 void main() async {
+  debugPaintSizeEnabled = false;
   WidgetsFlutterBinding.ensureInitialized();
   await MobileAds.instance.initialize();
 
@@ -31,6 +33,7 @@ class BibleApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Bible Verse App',
       theme: ThemeData.light().copyWith(
         scaffoldBackgroundColor: Colors.transparent,
@@ -189,12 +192,12 @@ class _HomePageState extends State<HomePage> {
       body = Column(
         children: [
           SizedBox(height: w * 0.15),
-          if (_bannerAd != null)
-            SizedBox(
-              width: _bannerAd!.size.width.toDouble(),
-              height: _bannerAd!.size.height.toDouble(),
-              child: AdWidget(ad: _bannerAd!),
-            ),
+          //if (_bannerAd != null)
+          //  SizedBox(
+          //    width: _bannerAd!.size.width.toDouble(),
+          //    height: _bannerAd!.size.height.toDouble(),
+          //    child: AdWidget(ad: _bannerAd!),
+          //  ),
           Expanded(
             child: Center(
               child: Padding(
@@ -488,105 +491,106 @@ class _FavoriteCardState extends State<FavoriteCard> with TickerProviderStateMix
     final h = widget.h;
     final verse = widget.verse;
 
-    final reference = '${verse.book} ${verse.chapter}:${verse.verse}';
-    final verseText = verse.text;
-
     final chapterVerses = widget.allVerses
         .where((v) => v.book == verse.book && v.chapter == verse.chapter)
         .toList();
 
-    return Container(
-      margin: EdgeInsets.only(bottom: h * 0.02),
-      padding: EdgeInsets.symmetric(vertical: h * 0.015, horizontal: w * 0.04),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(w * 0.03),
-        border: Border.all(color: Colors.grey.shade300),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
-            spreadRadius: 1,
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 제목 + 하트
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center, // ✅ 세로 중앙 정렬
-            children: [
-              Expanded(
-                child: Text(
-                  '${widget.bookNameMap[verse.book] ?? verse.book} ${verse.chapter}:${verse.verse}',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: w * 0.05* widget.fontSizeFactor,
-                  ),
-                ),
-              ),
-              IconButton(
-                padding: EdgeInsets.zero, // ✅ 여백 제거
-                constraints: const BoxConstraints(), // ✅ 버튼 최소화
-                icon: Icon(Icons.favorite, color: const Color(0xFFF6909D), size: w * 0.06),
-                onPressed: () {
-                  if (widget.onRemoveFavorite != null) {
-                    widget.onRemoveFavorite!(verse);
-                  }
-                },
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: h * 0.01),  // ✅ 여백은 항상 고정
+      child: AnimatedSize(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+        alignment: Alignment.topCenter,
+        child: Container(
+          padding: EdgeInsets.symmetric(vertical: h * 0.015, horizontal: w * 0.04),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(w * 0.03),
+            border: Border.all(color: Colors.grey.shade300),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.2),
+                spreadRadius: 1,
+                blurRadius: 4,
+                offset: const Offset(0, 2),
               ),
             ],
           ),
-          Text(
-            verseText,
-            style: TextStyle(fontSize: w * 0.042 * widget.fontSizeFactor),
-          ),
-          AnimatedSize(
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeInOut,
-            alignment: Alignment.topCenter,
-            child: _showFull
-                ? Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: chapterVerses.map((v) {
-                final isTarget = v.verse == verse.verse;
-                return Container(
-                  color: isTarget ? Colors.yellow.shade100 : null,
-                  padding: EdgeInsets.symmetric(vertical: h * 0.005),
-                  child: Text(
-                    '${v.verse}. ${v.text}',
-                    style: TextStyle(
-                      fontSize: w * 0.042* widget.fontSizeFactor,
-                      fontWeight: isTarget ? FontWeight.bold : FontWeight.w300,
-                      color: isTarget ? Colors.black87 : Colors.black87.withOpacity(0.8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 제목 + 하트
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: Text(
+                      '${widget.bookNameMap[verse.book] ?? verse.book} ${verse.chapter}:${verse.verse}',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: w * 0.05 * widget.fontSizeFactor,
+                      ),
                     ),
                   ),
-                );
-              }).toList(),
-            )
-                : const SizedBox.shrink(),
-          ),
-          Align(
-            alignment: Alignment.centerRight,
-            child: TextButton(
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.deepPurple,
-                textStyle: TextStyle(fontSize: w * 0.038 * widget.fontSizeFactor),
+                  IconButton(
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    icon: Icon(Icons.favorite, color: const Color(0xFFF6909D), size: w * 0.06),
+                    onPressed: () {
+                      if (widget.onRemoveFavorite != null) {
+                        widget.onRemoveFavorite!(verse);
+                      }
+                    },
+                  ),
+                ],
               ),
-              onPressed: () {
-                setState(() {
-                  _showFull = !_showFull;
-                });
-              },
-              child: Text(_showFull ? '간략히 보기' : '전체 보기'),
-            ),
+
+              _showFull
+                  ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: chapterVerses.map((v) {
+                  final isTarget = v.verse == verse.verse;
+                  return Container(
+                    color: isTarget ? Colors.yellow.shade100 : null,
+                    padding: EdgeInsets.symmetric(vertical: h * 0.005),
+                    child: Text(
+                      '${v.verse}. ${v.text}',
+                      style: TextStyle(
+                        fontSize: w * 0.042 * widget.fontSizeFactor,
+                        fontWeight: isTarget ? FontWeight.bold : FontWeight.w300,
+                        color: isTarget ? Colors.black87 : Colors.black87.withOpacity(0.8),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              )
+                  : Text(
+                verse.text,
+                style: TextStyle(fontSize: w * 0.042 * widget.fontSizeFactor),
+              ),
+
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  style: TextButton.styleFrom(
+                    foregroundColor: Colors.deepPurple,
+                    textStyle: TextStyle(fontSize: w * 0.038 * widget.fontSizeFactor),
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _showFull = !_showFull;
+                    });
+                  },
+                  child: Text(_showFull ? '간략히 보기' : '전체 보기'),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
+
 }
 
 

@@ -15,7 +15,6 @@ class BibleVerse {
     required this.verse,
     required this.text,
   });
-
   factory BibleVerse.fromJson(String book, int chapter, Map<String, dynamic> json) {
     return BibleVerse(
       book: book,

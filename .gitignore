@@ -83,3 +83,4 @@ android/release.keystore
 *.tmp
 *.swp
 .DS_Store
+android/key.properties

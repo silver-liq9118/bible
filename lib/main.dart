@@ -15,16 +15,46 @@ double _fontSizeFactor = 1.0;
 void main() async {
   debugPaintSizeEnabled = false;
   WidgetsFlutterBinding.ensureInitialized();
+  await loadFavorites();
   await MobileAds.instance.initialize();
-
   runApp(const BibleApp());
+
 }
 
 
-Future<void> saveFavorites() async {
+Future<void> loadFavorites() async {
   final prefs = await SharedPreferences.getInstance();
-  await prefs.setStringList('favorites', favorites.toList());
+  favorites = prefs.getStringList('favorites')?.toSet() ?? {};
 }
+String bibleVerseToKey(BibleVerse verse) {
+  return '${verse.book} ${verse.chapter}:${verse.verse}';
+}
+
+BibleVerse? keyToBibleVerse(String key, List<BibleVerse> allVerses) {
+  final match = RegExp(r'^(.+?) (\d+):(\d+)$').firstMatch(key);
+  if (match == null) return null;
+  final book = match.group(1)!;
+  final chapter = int.parse(match.group(2)!);
+  final verse = int.parse(match.group(3)!);
+  return allVerses.firstWhere(
+        (v) => v.book == book && v.chapter == chapter && v.verse == verse,
+    orElse: () => BibleVerse(book: '', chapter: 0, verse: 0, text: ''),
+  );
+}
+
+Future<Set<BibleVerse>> loadFavoritesFromStorage(List<BibleVerse> allVerses) async {
+  final prefs = await SharedPreferences.getInstance();
+  final keys = prefs.getStringList('favorites') ?? [];
+  final loaded = keys.map((k) => keyToBibleVerse(k, allVerses)).whereType<BibleVerse>().toSet();
+  return loaded;
+}
+
+Future<void> saveFavorites(Set<BibleVerse> verseSet) async {
+  final prefs = await SharedPreferences.getInstance();
+  final keys = verseSet.map(bibleVerseToKey).toList();
+  await prefs.setStringList('favorites', keys);
+}
+
 
 
 class BibleApp extends StatelessWidget {
@@ -108,10 +138,12 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _loadBannerAd();
-    loadBibleVersesFromStructuredJson('assets/KorRV.json').then((verses) {
+    loadBibleVersesFromStructuredJson('assets/KorRV.json').then((verses) async {
+      final loadedFavorites = await loadFavoritesFromStorage(verses);
       setState(() {
         allVerses = verses;
-        _currentVerse = verses.isNotEmpty ? verses[Random().nextInt(verses.length)] : null;
+        _currentVerse = verses[Random().nextInt(verses.length)];
+        favorites.addAll(loadedFavorites); // <- 이 부분 중요!
       });
     });
   }
@@ -192,12 +224,12 @@ class _HomePageState extends State<HomePage> {
       body = Column(
         children: [
           SizedBox(height: w * 0.15),
-          //if (_bannerAd != null)
-          //  SizedBox(
-          //    width: _bannerAd!.size.width.toDouble(),
-          //    height: _bannerAd!.size.height.toDouble(),
-          //    child: AdWidget(ad: _bannerAd!),
-          //  ),
+          if (_bannerAd != null)
+            SizedBox(
+              width: _bannerAd!.size.width.toDouble(),
+              height: _bannerAd!.size.height.toDouble(),
+              child: AdWidget(ad: _bannerAd!),
+            ),
           Expanded(
             child: Center(
               child: Padding(
@@ -419,7 +451,7 @@ class _HomePageState extends State<HomePage> {
               onRemoveFavorite: (verseKey) {
                 setState(() {
                   favorites.remove(verseKey);
-                  saveFavorites();
+                  saveFavorites(favorites);
                 });
               },
             );

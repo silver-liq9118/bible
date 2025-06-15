@@ -1,0 +1,2 @@
+/Users/eunju/Documents/GitHub/bible/android/app/.cxx/RelWithDebInfo/6d4so3t4/x86_64/CMakeFiles/edit_cache.dir
+/Users/eunju/Documents/GitHub/bible/android/app/.cxx/RelWithDebInfo/6d4so3t4/x86_64/CMakeFiles/rebuild_cache.dir

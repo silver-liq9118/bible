@@ -190,7 +190,7 @@ class _HomePageState extends State<HomePage> {
     return allVerses.where((v) => v.book == _currentVerse!.book && v.chapter == _currentVerse!.chapter).toList();
   }
 
-  void toggleFavorite([BibleVerse? verse]) {
+  Future<void> toggleFavorite([BibleVerse? verse]) async {
     setState(() {
       final target = verse ?? _currentVerse;
       if (target != null) {
@@ -201,6 +201,7 @@ class _HomePageState extends State<HomePage> {
         }
       }
     });
+    await saveFavorites(favorites);
   }
 
   void shareVerse(BibleVerse verse) {

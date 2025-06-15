@@ -4,7 +4,7 @@ plugins {
     id "dev.flutter.flutter-gradle-plugin"
 }
 
-// 🔐 키 등록 설정
+// 🔐 keystoreProperties는 plugins 아래에서 정의
 def keystoreProperties = new Properties()
 def keystorePropertiesFile = rootProject.file("key.properties")
 if (keystorePropertiesFile.exists()) {
@@ -12,25 +12,16 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace = "com.bible.bible"
-    compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
-
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
+    namespace "com.bible.bible"
+    compileSdkVersion 34
 
     defaultConfig {
-        applicationId = "com.bible.bible"
-        minSdk = 23
-        targetSdk = flutter.targetSdkVersion
-        versionCode = flutter.versionCode
-        versionName = flutter.versionName
+        applicationId "com.bible.bible"
+        minSdkVersion 23
+        targetSdkVersion 34
+        versionCode 1
+        versionName "1.0.0"
+        multiDexEnabled true
     }
 
     signingConfigs {
@@ -49,10 +40,15 @@ android {
             minifyEnabled false
         }
     }
-}
 
-flutter {
-    source = "../.."
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
 }
 
 dependencies {

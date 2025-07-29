@@ -8,17 +8,42 @@ import 'info.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'ChapterViewPage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:io' show Platform;
+import 'package:flutter/material.dart';
+import 'package:appsflyer_sdk/appsflyer_sdk.dart';
+
+late final AppsflyerSdk appsFlyerSdk;
 
 Set<String> favorites = {};
 double _fontSizeFactor = 1.0;
 
-void main() async {
-  debugPaintSizeEnabled = false;
+
+
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await loadFavorites();
   await MobileAds.instance.initialize();
-  runApp(const BibleApp());
 
+  final AppsFlyerOptions options = Platform.isIOS
+      ? AppsFlyerOptions(
+    afDevKey: 'VfseJjNKdqoUxG3psgRK4K',
+    appId: 'id6744880260',
+    showDebug: true,
+  )
+      : AppsFlyerOptions(
+    afDevKey: 'VfseJjNKdqoUxG3psgRK4K',
+    showDebug: true,
+  );
+
+  appsFlyerSdk = AppsflyerSdk(options);
+
+  await appsFlyerSdk.initSdk(
+    registerConversionDataCallback: true,
+    registerOnAppOpenAttributionCallback: true,
+    registerOnDeepLinkingCallback: true,
+  );
+
+  runApp(const BibleApp());
 }
 
 
@@ -163,7 +188,7 @@ class _HomePageState extends State<HomePage> {
 
   void _loadBannerAd() {
     _bannerAd = BannerAd(
-      adUnitId: 'ca-app-pub-3940256099942544/6300978111',
+      adUnitId: 'ca-app-pub-6090419247989618/9472943569',
       size: AdSize.banner,
       request: const AdRequest(),
       listener: const BannerAdListener(),
@@ -190,19 +215,33 @@ class _HomePageState extends State<HomePage> {
     return allVerses.where((v) => v.book == _currentVerse!.book && v.chapter == _currentVerse!.chapter).toList();
   }
 
+
+
   Future<void> toggleFavorite([BibleVerse? verse]) async {
+    final target = verse ?? _currentVerse;
+
+    if (target == null) return;
+
     setState(() {
-      final target = verse ?? _currentVerse;
-      if (target != null) {
-        if (favorites.contains(target)) {
-          favorites.remove(target);
-        } else {
-          favorites.add(target);
-        }
+      if (favorites.contains(target)) {
+        favorites.remove(target);
+      } else {
+        favorites.add(target);
+
+        // ✅ AppsFlyer 이벤트 전송
+        appsFlyerSdk.logEvent('add_to_favorites', {
+          'book': target.book,
+          'chapter': target.chapter.toString(),
+          'verse': target.verse.toString(),
+        }).then((res) {
+          print('✅ logEvent 결과: $res');
+        });
       }
     });
+
     await saveFavorites(favorites);
   }
+
 
   void shareVerse(BibleVerse verse) {
     final bookKorean = bookNameMap[verse.book] ?? verse.book;

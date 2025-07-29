@@ -1,5 +1,5 @@
 buildscript {
-    ext.kotlin_version = '1.9.10'
+    ext.kotlin_version = '1.9.20'
 
     repositories {
         google()
@@ -7,12 +7,20 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.3.0'
+        classpath 'com.android.tools.build:gradle:8.9.1'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
 
 allprojects {
+    subprojects {
+        afterEvaluate {
+            if (project.name.contains("google_mobile_ads")) {
+                project.dependencies.add("implementation", "androidx.appcompat:appcompat:1.6.1")
+            }
+        }
+    }
+
     repositories {
         google()
         mavenCentral()

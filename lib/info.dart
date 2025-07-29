@@ -1,6 +1,17 @@
 // 파일: lib/info.dart
 import 'package:flutter/material.dart';
 import 'license_page.dart';
+import 'package:in_app_purchase/in_app_purchase.dart';
+import 'dart:async';
+import 'dart:io' show Platform;
+import 'package:flutter/material.dart';
+import 'package:in_app_purchase/in_app_purchase.dart';
+import 'donation.dart';
+
+const String _productId = 'donation_1000'; // 실제 등록된 상품 ID
+final InAppPurchase _iap = InAppPurchase.instance;
+final Set<String> _productIds = {_productId};
+bool _purchaseInProgress = false;
 
 class InfoPage extends StatelessWidget {
   const InfoPage({super.key});
@@ -82,7 +93,71 @@ class InfoPage extends StatelessWidget {
               ),
             ),
           ),
+          SizedBox(height: h * 0.01),
 
+          // 후원하기 버튼
+          Container(
+            width: w * 0.8,
+            height: h * 0.07,
+            margin: EdgeInsets.only(top: h * 0.02),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [
+                  Color(0xFFFFD600), // 밝은 노랑
+                  Color(0xFFFFA000), // 주황색
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black26,
+                  blurRadius: 8,
+                  offset: Offset(0, 4),
+                ),
+              ],
+            ),
+            child: ElevatedButton(
+              onPressed: () {
+                // 향후 업데이트 시 페이지 이동으로 복원
+                // Navigator.push(
+                //   context,
+                //   MaterialPageRoute(builder: (context) => const DonationPage()),
+                // );
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('준비 중입니다 :)')),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                shadowColor: Colors.transparent,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    '💎',
+                    style: TextStyle(
+                      fontSize: w * 0.05,
+                    ),
+                  ),
+                  SizedBox(width: w * 0.02),
+                  Text(
+                    '후원하기',
+                    style: TextStyle(
+                      fontSize: w * 0.045,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
           SizedBox(height: h * 0.04),
 
           // 앱 정보

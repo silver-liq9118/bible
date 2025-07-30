@@ -9,6 +9,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'ChapterViewPage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io' show Platform;
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:appsflyer_sdk/appsflyer_sdk.dart';
 
@@ -17,34 +18,58 @@ late final AppsflyerSdk appsFlyerSdk;
 Set<String> favorites = {};
 double _fontSizeFactor = 1.0;
 
+late final bool isEmulatorEnv;
 
+Future<String> _getAndroidModel() async {
+  try {
+    final file = File('/system/build.prop');
+    final lines = await file.readAsLines();
+    final modelLine = lines.firstWhere(
+          (line) => line.startsWith('ro.product.model='),
+      orElse: () => '',
+    );
+    return modelLine.split('=').last;
+  } catch (_) {
+    return '';
+  }
+}
+
+Future<bool> isEmulator() async {
+  if (Platform.isIOS) {
+    return Platform.environment.containsKey('SIMULATOR_DEVICE_NAME');
+  } else if (Platform.isAndroid) {
+    final model = await _getAndroidModel();
+    return model.toLowerCase().contains('sdk') || model.toLowerCase().contains('emulator');
+  }
+  return false;
+}
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await loadFavorites();
   await MobileAds.instance.initialize();
 
-  final AppsFlyerOptions options = Platform.isIOS
-      ? AppsFlyerOptions(
-    afDevKey: 'VfseJjNKdqoUxG3psgRK4K',
-    appId: 'id6744880260',
-    showDebug: true,
-  )
-      : AppsFlyerOptions(
-    afDevKey: 'VfseJjNKdqoUxG3psgRK4K',
-    showDebug: true,
-  );
+  isEmulatorEnv = await isEmulator();
 
-  appsFlyerSdk = AppsflyerSdk(options);
-
-  await appsFlyerSdk.initSdk(
-    registerConversionDataCallback: true,
-    registerOnAppOpenAttributionCallback: true,
-    registerOnDeepLinkingCallback: true,
-  );
+  if (!isEmulatorEnv) {
+    final options = AppsFlyerOptions(
+      afDevKey: 'VfseJjNKdqoUxG3psgRK4K',
+      appId: '6744880260',  // 반드시 id로 시작해야 함!
+      showDebug: true,
+    );
+    appsFlyerSdk = AppsflyerSdk(options);
+    await appsFlyerSdk.initSdk(
+      registerConversionDataCallback: true,
+      registerOnAppOpenAttributionCallback: true,
+      registerOnDeepLinkingCallback: true,
+    );
+  } else {
+    debugPrint("🧪 시뮬레이터 환경: AppsFlyer 생략됨");
+  }
 
   runApp(const BibleApp());
 }
+
 
 
 Future<void> loadFavorites() async {
@@ -233,8 +258,6 @@ class _HomePageState extends State<HomePage> {
           'book': target.book,
           'chapter': target.chapter.toString(),
           'verse': target.verse.toString(),
-        }).then((res) {
-          print('✅ logEvent 결과: $res');
         });
       }
     });

@@ -121,13 +121,13 @@ class InfoPage extends StatelessWidget {
             child: ElevatedButton(
               onPressed: () {
                 // 향후 업데이트 시 페이지 이동으로 복원
-                // Navigator.push(
-                //   context,
-                //   MaterialPageRoute(builder: (context) => const DonationPage()),
-                // );
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('준비 중입니다 :)')),
-                );
+                 Navigator.push(
+                   context,
+                   MaterialPageRoute(builder: (context) => const DonationPage()),
+                 );
+                //ScaffoldMessenger.of(context).showSnackBar(
+                //  const SnackBar(content: Text('준비 중입니다 :)')),
+                //);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.transparent,

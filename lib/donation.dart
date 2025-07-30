@@ -10,9 +10,9 @@ class DonationPage extends StatelessWidget {
   const DonationPage({super.key});
 
   final List<Map<String, dynamic>> donationOptions = const [
-    {'amount': 300, 'id': 'donation_300', 'emoji': '☕️'},
-    {'amount': 500, 'id': 'donation_500', 'emoji': '🍩'},
-    {'amount': 1000, 'id': 'donation_1000', 'emoji': '💎'},
+    {'amount': 400, 'id': 'donation_400', 'emoji': '☕️'},
+    {'amount': 700, 'id': 'donation_700', 'emoji': '🍩'},
+    {'amount': 990, 'id': 'donation_990', 'emoji': '💎'},
     {'amount': 1500, 'id': 'donation_1500', 'emoji': '🌟'},
     {'amount': 3000, 'id': 'donation_3000', 'emoji': '🎁'},
     {'amount': 10000, 'id': 'donation_10000', 'emoji': '👑'},

@@ -10,7 +10,10 @@ button:focus-visible, textarea:focus-visible { outline: 3px solid #596d7a; outli
 h1:focus { outline: none; }
 .app { width: min(100%, 636px); min-height: 100dvh; margin: auto; background: linear-gradient(180deg, #e4f1f6 0%, #f6fafb 42%, #fff 100%); }
 main { min-height: 100dvh; padding: 34px 28px calc(105px + var(--safe-bottom)); }
-.page-today main { padding-top: 126px; }
+.page-today main { padding: 0 28px calc(82px + var(--safe-bottom)); }
+.today-layout { position: relative; min-height: calc(100dvh - 82px - var(--safe-bottom)); }
+.today-layout .verse-card { position: absolute; top: 50%; left: 0; right: 0; transform: translateY(-50%); max-height: calc(100dvh - 250px - var(--safe-bottom)); overflow-y: auto; }
+.today-layout .font-controls { position: absolute; left: 0; right: 0; bottom: 24px; margin: 0 auto; }
 .page-chapter { background: linear-gradient(180deg, #fff7c5 0%, #fffbee 48%, #fff 100%); }
 .page-heading { margin-bottom: 12px; }
 .eyebrow { color: #667780; font-size: 13px; font-weight: 700; margin: 0 0 8px; }
@@ -65,5 +68,5 @@ blockquote { margin: 0; line-height: 1.75; letter-spacing: -.35px; overflow-wrap
 .manual-share textarea { width: 100%; min-height: 170px; padding: 12px; border: 1px solid #b8c0c5; border-radius: 8px; background: #fff; color: #202124; line-height: 1.65; }
 .manual-share button { margin: 12px 8px 0 0; }
 .license { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; line-height: 1.7; color: #52616a; }
-@media (max-width: 359px) { main { padding-left: 18px; padding-right: 18px; } .page-today main { padding-top: 90px; } .verse-card { padding: 24px 20px 18px; } .verse-card-heading h1 { font-size: 24px; } }
-@media (orientation: landscape) { .page-today main { padding-top: 40px; } .font-controls { margin-top: 24px; } }
+@media (max-width: 359px) { main { padding-left: 18px; padding-right: 18px; } .page-today main { padding-left: 18px; padding-right: 18px; } .verse-card { padding: 24px 20px 18px; } .verse-card-heading h1 { font-size: 24px; } }
+@media (orientation: landscape) { .today-layout .verse-card { max-height: calc(100dvh - 130px); } .today-layout .font-controls { bottom: 8px; } }

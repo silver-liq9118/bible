@@ -115,7 +115,7 @@ export function App() {
       {!bible && !error && <p role="status" className="empty">말씀을 준비하고 있어요…</p>}
       {error && <div className="empty" role="alert"><p>{error}</p><Button onClick={() => { setError(''); setAttempt(a => a + 1); }}>다시 불러오기</Button></div>}
       {bible && <>
-        {route.page === 'today' && current && <>
+        {route.page === 'today' && current && <section className="today-layout">
           <article className="verse-card" aria-label="오늘의 말씀">
             <div className="verse-card-heading"><h1 ref={heading} tabIndex={-1}>{reference(current).replace('장 ', ':').replace('절', '')}</h1><button className={`heart-button ${prefs.favorites.includes(current.id) ? 'saved' : ''}`} aria-label="즐겨찾기" onClick={() => toggle(current)}><AppIcon name="heart" filled={prefs.favorites.includes(current.id)} /></button></div>
             <blockquote style={{ fontSize: prefs.fontSize }}>{current.text}</blockquote>
@@ -123,7 +123,7 @@ export function App() {
             <div className="icon-actions"><button aria-label="다른 말씀 읽기" onClick={() => { setCurrent(randomVerse(bible.verses, current.id)); setManualText(''); setNotice('새로운 말씀을 골랐어요.'); }}><AppIcon name="refresh" /></button><button aria-label="말씀 공유" disabled={sharing} onClick={() => void shareVerse(current)}><AppIcon name="share" /></button></div>
           </article>
           {fontControls}
-        </>}
+        </section>}
         {route.page === 'favorites' && <>
           {fontControls}
           <p className="muted">마음에 담은 말씀 {prefs.favorites.length}개</p>

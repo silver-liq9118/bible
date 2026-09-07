@@ -19,6 +19,9 @@ main { min-height: 100dvh; padding: 34px 28px calc(105px + var(--safe-bottom)); 
 .page-heading { margin-bottom: 12px; }
 .detail-heading { display: flex; align-items: center; gap: 12px; }
 .detail-heading h1 { margin: 0; }
+.chapter-heading .font-controls { margin: 0 0 0 auto; gap: 4px; }
+.chapter-heading .round-control { width: 36px; height: 36px; box-shadow: none; border: 1px solid rgba(130,118,64,.2); font-size: 21px; }
+.chapter-heading .font-reset { min-width: 42px; padding: 7px 8px; font-size: 16px; }
 .back-button { display: grid; place-items: center; flex: 0 0 44px; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 50%; background: rgba(255,255,255,.72); color: #202124; font-size: 27px; line-height: 1; }
 .eyebrow { color: #667780; font-size: 13px; font-weight: 700; margin: 0 0 8px; }
 h1 { font-size: 27px; line-height: 1.35; letter-spacing: -.7px; margin: 0 0 12px; word-break: keep-all; }
@@ -47,7 +50,7 @@ blockquote { margin: 0; line-height: 1.75; letter-spacing: -.35px; overflow-wrap
 .bottom-nav button { min-height: 58px; border: 0; background: transparent; color: #92999d; font-size: 12px; border-radius: 12px; display: grid; place-items: center; align-content: center; gap: 3px; }
 .bottom-nav button svg { width: 23px; height: 23px; }
 .bottom-nav button[aria-current] { color: #202124; font-weight: 700; }
-.favorite-card { padding: 23px 22px; margin: 14px 0; background: rgba(255,255,255,.97); border: 1px solid #e2e7e9; border-radius: 16px; box-shadow: 0 4px 13px rgba(55,76,88,.09); }
+.favorite-card { padding: 19px 20px; margin: 10px 0; background: rgba(255,255,255,.97); border: 1px solid #e2e7e9; border-radius: 16px; box-shadow: 0 4px 13px rgba(55,76,88,.09); }
 .favorites-toolbar { position: sticky; top: 0; z-index: 4; display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 4px -8px 12px; padding: 9px 8px; border-radius: 14px; background: rgba(234,245,248,.9); backdrop-filter: blur(10px); }
 .favorites-toolbar .muted { margin: 0; white-space: nowrap; }
 .favorites-toolbar .font-controls { margin: 0; gap: 4px; }
@@ -58,6 +61,7 @@ blockquote { margin: 0; line-height: 1.75; letter-spacing: -.35px; overflow-wrap
 .favorite-footer { display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin-top: 10px; }
 .favorite-footer button { border: 0; background: transparent; color: #6540a4; padding: 8px; font-weight: 700; }
 .favorite-footer svg { width: 22px; height: 22px; }
+.favorite-card .verse-text { line-height: 1.55; }
 .reference { color: #202124; font-size: 19px; font-weight: 700; margin: 0 0 14px; }
 .verse-text { line-height: 1.75; margin: 0; overflow-wrap: anywhere; word-break: keep-all; font-weight: 300; }
 .actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 0; }
@@ -65,10 +69,11 @@ blockquote { margin: 0; line-height: 1.75; letter-spacing: -.35px; overflow-wrap
 .footnote { text-align: center; font-size: 13px; margin: 24px 0; }
 .empty { padding: 40px 0; text-align: center; color: #53636c; }
 .empty h2 { color: #202124; }
-.chapter-list { list-style: none; margin: 20px -12px 0; padding: 0; }
-.chapter-list li { display: grid; grid-template-columns: 28px 1fr; gap: 8px; padding: 18px 14px; border-radius: 8px; }
+.chapter-list { list-style: none; margin: 12px -10px 0; padding: 0; }
+.chapter-list li { display: grid; grid-template-columns: 32px 1fr; gap: 6px; padding: 12px 12px; border-radius: 8px; }
 .chapter-list li.selected { background: #fff2a8; }
-.verse-number { color: #69777e; font-size: 14px; padding-top: 8px; }
+.chapter-list .verse-text { line-height: 1.55; }
+.verse-number { color: #58656a; font-size: 17px; font-weight: 700; padding-top: 5px; }
 .chapter-list .actions { margin: 10px 0 0; }
 .page-favorites .page-heading, .page-info .page-heading { margin-bottom: 16px; }
 .page-favorites .page-heading h1, .page-info .page-heading h1 { margin: 0; font-size: 24px; }

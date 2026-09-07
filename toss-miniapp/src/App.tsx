@@ -121,7 +121,7 @@ export function App() {
 
   return <div className={`app page-${route.page}`}>
     <main>
-      {route.page !== 'today' && <header className={`page-heading ${isDetailPage ? 'detail-heading' : ''}`}>{isDetailPage && <button className="back-button" aria-label="이전 화면으로 돌아가기" onClick={goBack}>←</button>}<div><h1 ref={heading} tabIndex={-1}>{title}</h1></div></header>}
+      {route.page !== 'today' && <header className={`page-heading ${isDetailPage ? 'detail-heading' : ''} ${route.page === 'chapter' ? 'chapter-heading' : ''}`}>{isDetailPage && <button className="back-button" aria-label="이전 화면으로 돌아가기" onClick={goBack}>←</button>}<div><h1 ref={heading} tabIndex={-1}>{title}</h1></div>{route.page === 'chapter' && fontControls}</header>}
       <p className="status" role="status" aria-live="polite">{notice}</p>
       {!bible && !error && <p role="status" className="empty">말씀을 준비하고 있어요…</p>}
       {error && <div className="empty" role="alert"><p>{error}</p><Button onClick={() => { setError(''); setAttempt(a => a + 1); }}>다시 불러오기</Button></div>}

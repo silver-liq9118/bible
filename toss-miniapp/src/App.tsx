@@ -85,6 +85,10 @@ export function App() {
     setPrefs(next);
     setNotice(writePreferences(browserStorage(), next) ? success : '기기에 저장하지 못했어요. 변경 내용은 이번 이용 중에만 유지돼요.');
   }
+  function goBack() {
+    if (window.history.state?.bibleDepth > 0) window.history.back();
+    else go('today');
+  }
   function toggle(v: Verse) {
     const exists = prefs.favorites.includes(v.id);
     updatePreferences({ ...prefs, favorites: exists ? prefs.favorites.filter(id => id !== v.id) : [...prefs.favorites, v.id] }, exists ? '즐겨찾기에서 해제했어요.' : '즐겨찾기에 저장했어요.');
@@ -116,7 +120,7 @@ export function App() {
 
   return <div className={`app page-${route.page}`}>
     <main>
-      {route.page !== 'today' && <header className="page-heading">{!['favorites', 'info'].includes(route.page) && <p className="eyebrow">오늘의 성경</p>}<h1 ref={heading} tabIndex={-1}>{title}</h1></header>}
+      {route.page !== 'today' && <header className={`page-heading ${route.page === 'chapter' ? 'chapter-heading' : ''}`}>{route.page === 'chapter' && <button className="back-button" aria-label="이전 화면으로 돌아가기" onClick={goBack}>←</button>}<div>{!['favorites', 'info', 'chapter'].includes(route.page) && <p className="eyebrow">오늘의 성경</p>}<h1 ref={heading} tabIndex={-1}>{title}</h1></div></header>}
       <p className="status" role="status" aria-live="polite">{notice}</p>
       {!bible && !error && <p role="status" className="empty">말씀을 준비하고 있어요…</p>}
       {error && <div className="empty" role="alert"><p>{error}</p><Button onClick={() => { setError(''); setAttempt(a => a + 1); }}>다시 불러오기</Button></div>}

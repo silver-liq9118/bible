@@ -125,8 +125,7 @@ export function App() {
           {fontControls}
         </section>}
         {route.page === 'favorites' && <>
-          {fontControls}
-          <p className="muted">마음에 담은 말씀 {prefs.favorites.length}개</p>
+          <div className="favorites-toolbar"><p className="muted">마음에 담은 말씀 {prefs.favorites.length}개</p>{fontControls}</div>
           {prefs.favorites.length === 0 ? <div className="empty"><h2>즐겨찾기한 말씀이 없습니다.</h2><Button variant="weak" onClick={() => go('today')}>말씀 읽으러 가기</Button></div> : prefs.favorites.map(id => bible.byId.get(id)).filter((v): v is Verse => !!v).map(v => <article key={v.id} className="favorite-card"><div className="favorite-heading"><h2 className="reference">{reference(v).replace('장 ', ':').replace('절', '')}</h2><button className="heart-button saved" aria-label="즐겨찾기 삭제" onClick={() => toggle(v)}><AppIcon name="heart" filled /></button></div><p className="verse-text" style={{ fontSize: prefs.fontSize }}>{v.text}</p><div className="favorite-footer"><button onClick={() => go(`chapter/${encodeURIComponent(v.id)}`)}>전체 보기</button><button aria-label="말씀 공유" onClick={() => void shareVerse(v)}><AppIcon name="share" /></button></div></article>)}
           <p className="footnote">이 기기에 저장돼요. 다른 기기나 테스트 환경에는 자동으로 동기화되지 않아요.</p>
         </>}

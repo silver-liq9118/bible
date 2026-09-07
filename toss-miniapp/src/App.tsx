@@ -7,14 +7,13 @@ import { browserStorage, clearPreferences, defaults, FONT_SIZES, readPreferences
 import { shareText } from './share';
 import { createVerseShareLink, initialSharedVerseId, isToss, listenBack, listenSafeArea, nativeShare } from './toss';
 
-type IconName = 'home' | 'heart' | 'info' | 'refresh' | 'share' | 'back';
+type IconName = 'home' | 'heart' | 'info' | 'refresh' | 'share';
 function AppIcon({ name, filled = false }: { name: IconName; filled?: boolean }) {
   const common = { width: 24, height: 24, viewBox: '0 0 24 24', fill: filled ? 'currentColor' : 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const, 'aria-hidden': true };
   if (name === 'heart') return <svg {...common}><path d="M20.8 4.7a5.5 5.5 0 0 0-7.8 0L12 5.8l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.5a5.5 5.5 0 0 0 0-7.8Z" /></svg>;
   if (name === 'home') return <svg {...common}><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1Z" /></svg>;
   if (name === 'info') return <svg {...common}><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5h.01"/></svg>;
   if (name === 'refresh') return <svg {...common}><path d="M20 6v5h-5M4 18v-5h5"/><path d="M18.2 9A7 7 0 0 0 6.3 6.3L4 8m16 8-2.3 1.7A7 7 0 0 1 5.8 15"/></svg>;
-  if (name === 'back') return <svg {...common}><path d="m15 18-6-6 6-6"/></svg>;
   return <svg {...common}><circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="m8.2 10.8 7.6-4.5M8.2 13.2l7.6 4.5"/></svg>;
 }
 
@@ -88,10 +87,6 @@ export function App() {
     setPrefs(next);
     setNotice(writePreferences(browserStorage(), next) ? success : '기기에 저장하지 못했어요. 변경 내용은 이번 이용 중에만 유지돼요.');
   }
-  function goBack() {
-    if (window.history.state?.bibleDepth > 0) window.history.back();
-    else go('today');
-  }
   function toggle(v: Verse) {
     const exists = prefs.favorites.includes(v.id);
     updatePreferences({ ...prefs, favorites: exists ? prefs.favorites.filter(id => id !== v.id) : [...prefs.favorites, v.id] }, exists ? '즐겨찾기에서 해제했어요.' : '즐겨찾기에 저장했어요.');
@@ -127,7 +122,7 @@ export function App() {
   return <div className={`app page-${route.page}`}>
     <main>
       {route.page !== 'today' && (isDetailPage
-        ? <header className={`page-heading detail-heading ${route.page === 'chapter' ? 'chapter-heading' : ''}`}><div className="detail-title-row"><button className="back-button" aria-label="이전 화면으로 돌아가기" onClick={goBack}><AppIcon name="back" /></button><h1 ref={heading} tabIndex={-1}>{title}</h1><span className="header-spacer" aria-hidden="true" /></div>{route.page === 'chapter' && fontControls}</header>
+        ? <header className={`page-heading detail-heading ${route.page === 'chapter' ? 'chapter-heading' : ''}`}><h1 ref={heading} tabIndex={-1}>{title}</h1>{route.page === 'chapter' && fontControls}</header>
         : <header className="page-heading"><h1 ref={heading} tabIndex={-1}>{title}</h1></header>)}
       <p className="status" role="status" aria-live="polite">{notice}</p>
       {!bible && !error && <p role="status" className="empty">말씀을 준비하고 있어요…</p>}

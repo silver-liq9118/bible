@@ -1,11 +1,13 @@
-# 개인정보 처리방침 (Privacy Policy)
+# 오늘의 성경
 
-본 앱(오늘의성경, Today’s Bible)은 사용자의 어떠한 개인정보도 수집, 저장, 전송하지 않습니다.
+기존 Flutter 앱과 Apps in Toss WebView 미니앱 소스를 함께 보관합니다.
 
-- 본 앱은 로그인 기능이 없으며, 서버와의 통신 없이 앱 내에서 모든 기능이 실행됩니다.
-- 광고(Google AdMob)는 Google의 광고 정책에 따라 제공되며, 해당 SDK에서 사용자 데이터를 수집할 수 있습니다. 이에 대한 자세한 내용은 [Google의 개인정보처리방침](https://policies.google.com/privacy)을 참고해주시기 바랍니다.
-- 본 앱은 사용자의 위치, 연락처, 사진, 카메라 등 어떠한 민감 정보에도 접근하지 않습니다.
+- **토스 미니앱 개발·빌드·콘솔 등록·QR 테스트·출시:** [toss-miniapp/README.md](toss-miniapp/README.md)
+- **Flutter legacy:** 루트 `lib/`, `android/`, `ios/`, `pubspec.yaml` 등 기존 경로를 그대로 보존했습니다. 루트의 Flutter 빌드는 기존 네이티브 앱입니다.
+- **공통 성경 데이터:** `assets/KorRV.json`. 미니앱은 원본을 빌드 자산으로 사용하며 별도 사본을 관리하지 않습니다.
+- **기존 Flutter 개인정보처리방침:** [보존 문서](docs/flutter-privacy-policy-legacy.md). AdMob 내용은 Flutter 버전에만 적용됩니다.
+- **토스 개인정보처리방침:** 인앱 정보 → 개인정보처리방침과 [출시 전 초안](toss-miniapp/PRIVACY.md).
 
-**문의:** sonprojecta@gmail.com
+미니앱에는 Flutter의 AdMob, AppsFlyer, 후원 결제, `in_app_purchase`, `dart:io` 및 네이티브 플랫폼 프로젝트를 포함하지 않습니다. 별도 로그인·광고·결제·분석 서버가 없는 클라이언트 앱입니다.
 
-최종 업데이트일: 2025년 4월 21일
+문의: sonprojecta@gmail.com

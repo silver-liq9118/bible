@@ -6,6 +6,16 @@ import { browserStorage, clearPreferences, defaults, FONT_SIZES, readPreferences
 import { shareText } from './share';
 import { isToss, listenBack, listenSafeArea, nativeShare } from './toss';
 
+type IconName = 'home' | 'heart' | 'info' | 'refresh' | 'share';
+function AppIcon({ name, filled = false }: { name: IconName; filled?: boolean }) {
+  const common = { width: 24, height: 24, viewBox: '0 0 24 24', fill: filled ? 'currentColor' : 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const, 'aria-hidden': true };
+  if (name === 'heart') return <svg {...common}><path d="M20.8 4.7a5.5 5.5 0 0 0-7.8 0L12 5.8l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.5a5.5 5.5 0 0 0 0-7.8Z" /></svg>;
+  if (name === 'home') return <svg {...common}><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1Z" /></svg>;
+  if (name === 'info') return <svg {...common}><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5h.01"/></svg>;
+  if (name === 'refresh') return <svg {...common}><path d="M20 6v5h-5M4 18v-5h5"/><path d="M18.2 9A7 7 0 0 0 6.3 6.3L4 8m16 8-2.3 1.7A7 7 0 0 1 5.8 15"/></svg>;
+  return <svg {...common}><circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="m8.2 10.8 7.6-4.5M8.2 13.2l7.6 4.5"/></svg>;
+}
+
 type Route = { page: 'today' | 'favorites' | 'info' | 'privacy' | 'licenses' } | { page: 'chapter'; id: string };
 function getRoute(): Route {
   const hash = window.location.hash.slice(1);
@@ -87,47 +97,40 @@ export function App() {
     } finally { setSharing(false); }
   }, [sharing]);
 
-  function verseActions(v: Verse, showChapter = true) {
-    if (!v.text) return null;
-    const saved = prefs.favorites.includes(v.id);
-    return <div className="actions">
-      <Button size="medium" variant="weak" color={saved ? 'primary' : 'dark'} aria-pressed={saved} aria-label={`${reference(v)} 즐겨찾기 ${saved ? '해제' : '저장'}`} onClick={() => toggle(v)}>{saved ? '저장됨' : '즐겨찾기'}</Button>
-      <Button size="medium" variant="weak" color="dark" disabled={sharing} onClick={() => void shareVerse(v)}>말씀 공유</Button>
-      {showChapter && <Button size="medium" variant="weak" color="dark" onClick={() => go(`chapter/${encodeURIComponent(v.id)}`)}>장 전체 보기</Button>}
-    </div>;
-  }
-  const title = { today: '오늘, 마음에 담을 말씀', favorites: '나의 즐겨찾기', info: '정보와 설정', privacy: '개인정보처리방침', licenses: '오픈소스 안내', chapter: '장 전체 보기' }[route.page];
+  const fontControls = <div className="font-controls" aria-label="말씀 글자 크기">
+    <button className="round-control" aria-label="글자 작게" disabled={prefs.fontSize === FONT_SIZES[0]} onClick={() => updatePreferences({ ...prefs, fontSize: FONT_SIZES[Math.max(0, FONT_SIZES.indexOf(prefs.fontSize as typeof FONT_SIZES[number]) - 1)] }, '글자 크기를 저장했어요.')}>−</button>
+    <button className="font-reset" aria-label="글자 크기 기본값" onClick={() => updatePreferences({ ...prefs, fontSize: 24 }, '기본 글자 크기로 돌아왔어요.')}>Aa</button>
+    <button className="round-control" aria-label="글자 크게" disabled={prefs.fontSize === FONT_SIZES[4]} onClick={() => updatePreferences({ ...prefs, fontSize: FONT_SIZES[Math.min(4, FONT_SIZES.indexOf(prefs.fontSize as typeof FONT_SIZES[number]) + 1)] }, '글자 크기를 저장했어요.')}>+</button>
+  </div>;
   const selected = route.page === 'chapter' ? bible?.byId.get(route.id) : undefined;
   const chapter = selected ? bible?.chapters.get(chapterKey(selected)) : undefined;
+  const title = route.page === 'chapter' && selected
+    ? reference(selected).replace('장 ', ':').replace('절', '')
+    : { today: '오늘, 마음에 담을 말씀', favorites: '나의 즐겨찾기', info: '정보와 설정', privacy: '개인정보처리방침', licenses: '오픈소스 안내', chapter: '장 전체 보기' }[route.page];
 
-  return <div className="app">
+  return <div className={`app page-${route.page}`}>
     <main>
-      <header className="page-heading"><p className="eyebrow">오늘의 성경</p><h1 ref={heading} tabIndex={-1}>{title}</h1>
-        {route.page === 'today' && <p className="muted">잠시 멈추고, 한 구절을 천천히 읽어보세요.</p>}
-      </header>
+      {route.page !== 'today' && <header className="page-heading"><p className="eyebrow">오늘의 성경</p><h1 ref={heading} tabIndex={-1}>{title}</h1></header>}
       <p className="status" role="status" aria-live="polite">{notice}</p>
       {!bible && !error && <p role="status" className="empty">말씀을 준비하고 있어요…</p>}
       {error && <div className="empty" role="alert"><p>{error}</p><Button onClick={() => { setError(''); setAttempt(a => a + 1); }}>다시 불러오기</Button></div>}
       {bible && <>
-        {['today', 'chapter', 'favorites'].includes(route.page) && <div className="font-controls" aria-label="말씀 글자 크기">
-          <span>글자 크기</span><div className="font-buttons">
-            <Button size="medium" variant="weak" color="dark" aria-label="글자 작게" disabled={prefs.fontSize === FONT_SIZES[0]} onClick={() => updatePreferences({ ...prefs, fontSize: FONT_SIZES[Math.max(0, FONT_SIZES.indexOf(prefs.fontSize as typeof FONT_SIZES[number]) - 1)] }, '글자 크기를 저장했어요.')}>가 −</Button>
-            <span aria-label={`글자 크기 ${prefs.fontSize}`}>{prefs.fontSize}</span>
-            <Button size="medium" variant="weak" color="dark" aria-label="글자 크게" disabled={prefs.fontSize === FONT_SIZES[4]} onClick={() => updatePreferences({ ...prefs, fontSize: FONT_SIZES[Math.min(4, FONT_SIZES.indexOf(prefs.fontSize as typeof FONT_SIZES[number]) + 1)] }, '글자 크기를 저장했어요.')}>가 +</Button>
-          </div>
-        </div>}
         {route.page === 'today' && current && <>
-          <article className="verse-card" aria-label="오늘의 말씀"><p className="reference">{reference(current)}</p><blockquote style={{ fontSize: prefs.fontSize }}>{current.text}</blockquote><p className="translation">개역성경</p></article>
-          {verseActions(current)}
-          <Button display="full" onClick={() => { setCurrent(randomVerse(bible.verses, current.id)); setManualText(''); setNotice('새로운 말씀을 골랐어요.'); }}>다른 말씀 읽기</Button>
-          <p className="footnote">말씀은 성경 전체에서 무작위로 골라요.</p>
+          <article className="verse-card" aria-label="오늘의 말씀">
+            <div className="verse-card-heading"><h1 ref={heading} tabIndex={-1}>{reference(current).replace('장 ', ':').replace('절', '')}</h1><button className={`heart-button ${prefs.favorites.includes(current.id) ? 'saved' : ''}`} aria-label="즐겨찾기" onClick={() => toggle(current)}><AppIcon name="heart" filled={prefs.favorites.includes(current.id)} /></button></div>
+            <blockquote style={{ fontSize: prefs.fontSize }}>{current.text}</blockquote>
+            <button className="chapter-link" onClick={() => go(`chapter/${encodeURIComponent(current.id)}`)}>{current.chapter}장 전체 보기</button>
+            <div className="icon-actions"><button aria-label="다른 말씀 읽기" onClick={() => { setCurrent(randomVerse(bible.verses, current.id)); setManualText(''); setNotice('새로운 말씀을 골랐어요.'); }}><AppIcon name="refresh" /></button><button aria-label="말씀 공유" disabled={sharing} onClick={() => void shareVerse(current)}><AppIcon name="share" /></button></div>
+          </article>
+          {fontControls}
         </>}
         {route.page === 'favorites' && <>
+          {fontControls}
           <p className="muted">마음에 담은 말씀 {prefs.favorites.length}개</p>
-          {prefs.favorites.length === 0 ? <div className="empty"><h2>아직 저장한 말씀이 없어요</h2><p>다시 읽고 싶은 말씀을 즐겨찾기에 담아보세요.</p><Button variant="weak" onClick={() => go('today')}>말씀 읽으러 가기</Button></div> : prefs.favorites.map(id => bible.byId.get(id)).filter((v): v is Verse => !!v).map(v => <article key={v.id} className="favorite-card"><h2 className="reference">{reference(v)}</h2><p className="verse-text" style={{ fontSize: prefs.fontSize }}>{v.text}</p>{verseActions(v)}</article>)}
+          {prefs.favorites.length === 0 ? <div className="empty"><h2>즐겨찾기한 말씀이 없습니다.</h2><Button variant="weak" onClick={() => go('today')}>말씀 읽으러 가기</Button></div> : prefs.favorites.map(id => bible.byId.get(id)).filter((v): v is Verse => !!v).map(v => <article key={v.id} className="favorite-card"><div className="favorite-heading"><h2 className="reference">{reference(v).replace('장 ', ':').replace('절', '')}</h2><button className="heart-button saved" aria-label="즐겨찾기 삭제" onClick={() => toggle(v)}><AppIcon name="heart" filled /></button></div><p className="verse-text" style={{ fontSize: prefs.fontSize }}>{v.text}</p><div className="favorite-footer"><button onClick={() => go(`chapter/${encodeURIComponent(v.id)}`)}>전체 보기</button><button aria-label="말씀 공유" onClick={() => void shareVerse(v)}><AppIcon name="share" /></button></div></article>)}
           <p className="footnote">이 기기에 저장돼요. 다른 기기나 테스트 환경에는 자동으로 동기화되지 않아요.</p>
         </>}
-        {route.page === 'chapter' && (selected && chapter ? <section><h2>{selected.bookName} {selected.chapter}장</h2><p className="muted">선택한 말씀은 파란색 배경으로 표시돼요.</p><ol className="chapter-list">{chapter.map(v => <li key={v.id} value={v.verse} className={v.id === selected.id ? 'selected' : ''}><span className="verse-number">{v.verse}</span><div><p className="verse-text" style={{ fontSize: prefs.fontSize }}>{v.text || '원본 데이터에 본문이 없는 구절이에요.'}</p>{verseActions(v, false)}</div></li>)}</ol></section> : <div className="empty"><p>찾을 수 없는 말씀이에요.</p><Button onClick={() => go('today')}>오늘의 말씀 보기</Button></div>)}
+        {route.page === 'chapter' && (selected && chapter ? <section><ol className="chapter-list">{chapter.map(v => <li key={v.id} value={v.verse} className={v.id === selected.id ? 'selected' : ''}><span className="verse-number">{v.verse}</span><div><p className="verse-text" style={{ fontSize: prefs.fontSize }}>{v.text || '원본 데이터에 본문이 없는 구절이에요.'}</p></div></li>)}</ol></section> : <div className="empty"><p>찾을 수 없는 말씀이에요.</p><Button onClick={() => go('today')}>오늘의 말씀 보기</Button></div>)}
         {route.page === 'info' && <section className="info">
           <h2>매일 한 구절, 가까이</h2><p>개역성경을 읽고 마음에 남는 말씀을 간직하세요.</p>
           <div className="info-links"><Button variant="weak" color="dark" display="full" onClick={() => go('privacy')}>개인정보처리방침</Button><Button variant="weak" color="dark" display="full" onClick={() => go('licenses')}>오픈소스 안내</Button></div>
@@ -148,7 +151,7 @@ export function App() {
       </>}
       {manualText && <section className="manual-share"><h2>말씀 복사</h2><textarea aria-label="공유할 말씀" readOnly value={manualText} onFocus={e => e.target.select()} /><Button variant="weak" onClick={async () => { try { await navigator.clipboard.writeText(manualText); setNotice('말씀을 복사했어요.'); setManualText(''); } catch { setNotice('위 말씀을 길게 눌러 직접 복사해 주세요.'); } }}>복사하기</Button><Button color="dark" variant="weak" onClick={() => setManualText('')}>닫기</Button></section>}
     </main>
-    <nav className="bottom-nav" aria-label="주요 메뉴">{([['today', '오늘의 말씀'], ['favorites', '즐겨찾기'], ['info', '정보']] as const).map(([page, label]) => <button key={page} aria-current={route.page === page ? 'page' : undefined} onClick={() => go(page)}>{label}</button>)}</nav>
+    {['today', 'favorites', 'info'].includes(route.page) && <nav className="bottom-nav" aria-label="주요 메뉴">{([['today', '홈', 'home'], ['favorites', '즐겨찾기', 'heart'], ['info', '정보', 'info']] as const).map(([page, label, icon]) => <button key={page} aria-current={route.page === page ? 'page' : undefined} onClick={() => go(page)}><AppIcon name={icon} filled={page === 'favorites' && route.page === page}/><span>{label}</span></button>)}</nav>}
   </div>;
 }
 

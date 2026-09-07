@@ -5,7 +5,7 @@ export interface Bible { verses: Verse[]; byId: Map<string, Verse>; chapters: Ma
 const bookNames: Record<string, string> = { ...names, 'Song of Solomon': '아가', 'Revelation of John': '요한계시록' };
 export const chapterKey = (v: Pick<Verse, 'book' | 'chapter'>) => `${v.book}:${v.chapter}`;
 export const reference = (v: Verse) => `${v.bookName} ${v.chapter}장 ${v.verse}절`;
-export const shareMessage = (v: Verse) => `${v.text}\n\n${reference(v)} · 개역성경\n오늘의 성경`;
+export const shareMessage = (v: Verse, link?: string) => `${v.text}\n\n${reference(v)} · 개역성경\n오늘의 성경${link ? `\n${link}` : ''}`;
 
 export function parseBible(input: unknown): Bible {
   if (!input || typeof input !== 'object' || !('books' in input) || !Array.isArray(input.books)) throw new Error('성경 형식을 확인해 주세요.');

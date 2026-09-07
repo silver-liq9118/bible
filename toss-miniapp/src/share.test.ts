@@ -1,6 +1,13 @@
 import { describe, expect, it, vi } from 'vitest';
-import { shareText } from './share';
+import { shareText, verseIdFromScheme, verseSharePath } from './share';
 describe('sharing', () => {
+  it('creates and parses a public Toss deep link for a verse', () => {
+    const path = verseSharePath('John:3:16');
+    expect(path).toBe('intoss://todaysbible/verse?verseId=John%3A3%3A16');
+    expect(verseIdFromScheme(path)).toBe('John:3:16');
+    expect(verseIdFromScheme('intoss://another-app/verse?verseId=John%3A3%3A16')).toBeUndefined();
+    expect(verseIdFromScheme('not a url')).toBeUndefined();
+  });
   it('uses the SDK first', async () => {
     const nativeShare = vi.fn().mockResolvedValue(undefined); const copy = vi.fn();
     expect(await shareText('말씀', { nativeShare, copy })).toBe('shared');

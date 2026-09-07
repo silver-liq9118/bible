@@ -32,6 +32,7 @@ describe('the actual KorRV asset', () => {
     expect(reference(bible.verses[0])).toBe('창세기 1장 1절');
     expect(shareMessage(bible.verses[0])).toContain('태초에 하나님');
     expect(shareMessage(bible.verses[0])).not.toMatch(/https?:|intoss-private:/);
+    expect(shareMessage(bible.verses[0], 'https://example.com/share')).toContain('https://example.com/share');
   });
   it('rejects invalid data instead of rendering broken content', () => {
     expect(() => parseBible({ books: [] })).toThrow();

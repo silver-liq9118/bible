@@ -5,7 +5,7 @@ import appIconUrl from './app-icon.png?url';
 import { chapterKey, parseBible, randomVerse, reference, shareMessage, type Bible, type Verse } from './bible';
 import { browserStorage, clearPreferences, defaults, FONT_SIZES, readPreferences, writePreferences, type Preferences } from './storage';
 import { shareText } from './share';
-import { isToss, listenBack, listenSafeArea, nativeShare } from './toss';
+import { createVerseShareLink, initialSharedVerseId, isToss, listenBack, listenSafeArea, nativeShare } from './toss';
 
 type IconName = 'home' | 'heart' | 'info' | 'refresh' | 'share' | 'back';
 function AppIcon({ name, filled = false }: { name: IconName; filled?: boolean }) {
@@ -53,8 +53,10 @@ export function App() {
     }).then(data => {
       const loaded = parseBible(data);
       const saved = readPreferences(browserStorage(), new Set(loaded.byId.keys()));
-      setBible(loaded); setCurrent(randomVerse(loaded.verses)); setPrefs(saved.value);
+      const shared = initialSharedVerseId();
+      setBible(loaded); setCurrent(shared ? loaded.byId.get(shared) ?? randomVerse(loaded.verses) : randomVerse(loaded.verses)); setPrefs(saved.value);
       if (saved.warning) setNotice(saved.warning);
+      else if (shared && loaded.byId.has(shared)) setNotice('공유받은 말씀을 열었어요.');
     }).catch(e => { if (e.name !== 'AbortError') setError('말씀을 불러오지 못했어요. 연결을 확인한 뒤 다시 시도해 주세요.'); });
     return () => controller.abort();
   }, [attempt]);
@@ -98,7 +100,9 @@ export function App() {
     if (sharing) return;
     setSharing(true); setManualText('');
     try {
-      const message = shareMessage(v);
+      let link: string | undefined;
+      if (isToss()) { try { link = await createVerseShareLink(v.id); } catch { /* Share the verse text even if link creation is unavailable. */ } }
+      const message = shareMessage(v, link);
       const result = await shareText(message, isToss() ? { nativeShare } : {
         webShare: navigator.share?.bind(navigator),
         copy: navigator.clipboard?.writeText.bind(navigator.clipboard),

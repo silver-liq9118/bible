@@ -110,7 +110,7 @@ codex mcp add apps-in-toss-console --url https://mcp.toss.im/adapters/apps-in-to
 3. [PRIVACY.md](PRIVACY.md)의 운영자·연락처 및 데이터 처리를 확인하고 공개 HTTPS 방침 URL을 게시·등록합니다. 인앱 `#privacy`만으로 외부 심사용 URL을 대신하지 않습니다.
 4. 확정 appName으로 `pnpm test`, `pnpm lint`, `pnpm build` 실행.
 5. 콘솔 ‘출시하기’에서 `.ait` 업로드 또는 인증된 MCP `bundle_upload`. ‘테스트하기’ QR을 최신 iOS/Android 토스 앱으로 스캔합니다. **로그인된 만 19세 이상 워크스페이스 멤버**가 테스트해야 합니다.
-6. QR 환경은 `intoss-private://{appName}`입니다. 공유에 이 비공개 링크를 넣지 않습니다. 현재는 텍스트만 공유하며 링크 추가 시 `Share.createLink`와 공개 `intoss://{appName}`을 사용합니다.
+6. QR 환경은 `intoss-private://{appName}`입니다. 공유에는 비공개 QR 주소를 넣지 않습니다. 말씀 공유는 `Share.createLink`로 공개 `intoss://todaysbible/verse?verseId=...`를 변환하며, 링크 진입 시 해당 구절을 홈 카드로 엽니다. 공개 딥링크는 정식 출시 이후 실기기에서 최종 확인합니다.
 7. QR 테스트를 1회 이상 완료해야 검토 요청이 활성화됩니다. 아래 체크리스트 후 검수 요청 → 승인 → 콘솔 ‘출시하기’. 공개 후 실제 Origin에서 다시 검증합니다. **3.x 출시 후 2.x로 롤백할 수 없습니다.**
 
 ## 남은 수동 단계 / 심사 체크리스트
@@ -132,12 +132,28 @@ codex mcp add apps-in-toss-console --url https://mcp.toss.im/adapters/apps-in-to
 
 Vitest: 실제 KorRV 전체 구조·한국어 책 이름·장 정렬·빈 절·랜덤 경계·공유문, 저장소 재읽기/손상/용량 오류/키 범위 삭제, 공유 취소/fallback. 로컬 브라우저 mock 성공은 실제 토스 QR 성공을 의미하지 않습니다.
 
+## 맞춤 말씀 알림 도입 순서
+
+추천 말씀 푸시는 현재 번들에 포함되지 않았습니다. 다음 준비가 끝난 뒤 별도 기능으로 연결합니다.
+
+1. 콘솔 스마트 발송에서 알림 동의문과 캠페인을 만들고 문구 검수를 받아 `templateSetCode`를 확정합니다. 재방문·리텐션 성격이면 광고성 메시지로 판단될 수 있으므로 기능성 메시지로 임의 구현하지 않습니다.
+2. 사용자가 아침·점심·저녁 중 받을 시간을 직접 고르는 설정 화면을 만들고 `requestNotificationAgreement`에 승인된 템플릿 코드를 전달합니다. 거부·철회 상태도 설정 화면에서 명확히 표시합니다.
+3. 비게임 사용자 식별에는 `User.getAnonymousKey()`를 사용하고, 선호 시간·시간대·추천 이력은 파트너 서버에 최소한으로 저장합니다. `localStorage`만으로는 앱이 닫힌 시간에 사용자별 푸시를 예약할 수 없습니다.
+4. 파트너 서버에서 스케줄러와 추천 로직을 실행하고 mTLS로 스마트 발송 API를 호출합니다. 인증서와 키는 번들에 포함하지 않습니다.
+5. 첫 버전은 시간대별 큐레이션과 즐겨찾기 주제 기반 추천으로 제한합니다. 조회 횟수를 서버로 보낼 경우 개인정보처리방침과 동의 내용을 먼저 갱신합니다.
+6. 날씨 추천은 별도 단계로 진행합니다. `geolocation` 권한을 추가하고 사용자 요청 시에만 위치를 조회하며, 원본 좌표는 저장하지 않고 지역/기상 코드로 즉시 변환합니다. 날씨 API 장애 시에는 시간대 추천으로 대체합니다.
+
+알림 제목은 7자 이내, 내용은 25자 이내 규칙을 기준으로 작성하고 콘솔 검수 결과를 최종 기준으로 사용합니다.
+
 ## 공식 근거
 
 - [SDK 3.x 설정 변경](https://developers-apps-in-toss.toss.im/documentation/integration/sdk-3.x)
 - [2026-08-25 Storage/CORS 후속 공지](https://techchat-apps-in-toss.toss.im/t/webview-storage-cors/4673)
 - [9월 14일 전환 공지](https://techchat-apps-in-toss.toss.im/t/webview-sdk-3-x-9-14/4624)
 - [Share.sendMessage](https://developers-apps-in-toss.toss.im/documentation/sdk/domains-api/share/share.sendmessage)
+- [토스앱 공유 링크](https://developers-apps-in-toss.toss.im/bedrock/reference/framework/%EA%B3%B5%EC%9C%A0/getTossShareLink.html)
+- [알림 동의문 요청](https://developers-apps-in-toss.toss.im/bedrock/reference/framework/%EC%9D%B8%ED%84%B0%EB%A0%89%EC%85%98/requestNotificationAgreement.html)
+- [스마트 발송](https://developers-apps-in-toss.toss.im/smart-message/intro.html), [스마트 발송 API](https://developers-apps-in-toss.toss.im/smart-message/develop.html)
 - [TDS 시작](https://tossmini-docs.toss.im/tds-mobile/start/), [공식 AX MCP](https://github.com/toss/apps-in-toss-ax), [콘솔 MCP](https://developers-apps-in-toss.toss.im/guide/console-mcp)
 - [비게임 출시](https://developers-apps-in-toss.toss.im/checklist/app-nongame), [오픈 정책](https://developers-apps-in-toss.toss.im/intro/guide)
 - [QR 테스트](https://developers-apps-in-toss.toss.im/guide/operation/toss), [출시하기](https://developers-apps-in-toss.toss.im/guide/operation/deploy)

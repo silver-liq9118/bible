@@ -1,4 +1,14 @@
 export type ShareResult = 'shared' | 'copied' | 'cancelled' | 'manual';
+export const APP_NAME = 'todaysbible';
+export const verseSharePath = (verseId: string) => `intoss://${APP_NAME}/verse?verseId=${encodeURIComponent(verseId)}`;
+export function verseIdFromScheme(scheme: string): string | undefined {
+  try {
+    const url = new URL(scheme);
+    if (url.protocol !== 'intoss:' || url.hostname !== APP_NAME || url.pathname !== '/verse') return undefined;
+    const verseId = url.searchParams.get('verseId')?.trim();
+    return verseId || undefined;
+  } catch { return undefined; }
+}
 export interface ShareAdapters {
   nativeShare?: (message: string) => Promise<void>;
   webShare?: (data: ShareData) => Promise<void>;

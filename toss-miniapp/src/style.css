@@ -17,8 +17,8 @@ main { min-height: 100dvh; padding: 34px 28px calc(105px + var(--safe-bottom)); 
 .today-layout .font-controls { margin: 26px auto 0; }
 .page-chapter { background: linear-gradient(180deg, #fff7c5 0%, #fffbee 48%, #fff 100%); }
 .page-heading { margin-bottom: 12px; }
-.chapter-heading { display: flex; align-items: center; gap: 12px; }
-.chapter-heading h1 { margin: 0; }
+.detail-heading { display: flex; align-items: center; gap: 12px; }
+.detail-heading h1 { margin: 0; }
 .back-button { display: grid; place-items: center; flex: 0 0 44px; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 50%; background: rgba(255,255,255,.72); color: #202124; font-size: 27px; line-height: 1; }
 .eyebrow { color: #667780; font-size: 13px; font-weight: 700; margin: 0 0 8px; }
 h1 { font-size: 27px; line-height: 1.35; letter-spacing: -.7px; margin: 0 0 12px; word-break: keep-all; }

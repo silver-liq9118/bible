@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button } from '@toss/tds-mobile';
 import bibleUrl from '../../assets/KorRV.json?url';
+import appIconUrl from './app-icon.png?url';
 import { chapterKey, parseBible, randomVerse, reference, shareMessage, type Bible, type Verse } from './bible';
 import { browserStorage, clearPreferences, defaults, FONT_SIZES, readPreferences, writePreferences, type Preferences } from './storage';
 import { shareText } from './share';
@@ -58,11 +59,16 @@ export function App() {
   }, [attempt]);
   useEffect(() => listenSafeArea(), []);
   useEffect(() => {
-    const update = () => { setRoute(getRoute()); setManualText(''); setConfirmReset(false); };
+    const update = () => { setRoute(getRoute()); setManualText(''); setConfirmReset(false); setNotice(''); };
     window.addEventListener('hashchange', update);
     window.addEventListener('popstate', update);
     return () => { window.removeEventListener('hashchange', update); window.removeEventListener('popstate', update); };
   }, []);
+  useEffect(() => {
+    if (!notice) return;
+    const timer = window.setTimeout(() => setNotice(''), 2400);
+    return () => window.clearTimeout(timer);
+  }, [notice]);
   useEffect(() => {
     window.scrollTo(0, 0); heading.current?.focus();
   }, [route]);
@@ -106,16 +112,16 @@ export function App() {
   const chapter = selected ? bible?.chapters.get(chapterKey(selected)) : undefined;
   const title = route.page === 'chapter' && selected
     ? reference(selected).replace('장 ', ':').replace('절', '')
-    : { today: '오늘, 마음에 담을 말씀', favorites: '나의 즐겨찾기', info: '정보와 설정', privacy: '개인정보처리방침', licenses: '오픈소스 안내', chapter: '장 전체 보기' }[route.page];
+    : { today: '오늘, 마음에 담을 말씀', favorites: '즐겨찾기', info: '정보', privacy: '개인정보처리방침', licenses: '오픈소스 안내', chapter: '장 전체 보기' }[route.page];
 
   return <div className={`app page-${route.page}`}>
     <main>
-      {route.page !== 'today' && <header className="page-heading"><p className="eyebrow">오늘의 성경</p><h1 ref={heading} tabIndex={-1}>{title}</h1></header>}
+      {route.page !== 'today' && <header className="page-heading">{!['favorites', 'info'].includes(route.page) && <p className="eyebrow">오늘의 성경</p>}<h1 ref={heading} tabIndex={-1}>{title}</h1></header>}
       <p className="status" role="status" aria-live="polite">{notice}</p>
       {!bible && !error && <p role="status" className="empty">말씀을 준비하고 있어요…</p>}
       {error && <div className="empty" role="alert"><p>{error}</p><Button onClick={() => { setError(''); setAttempt(a => a + 1); }}>다시 불러오기</Button></div>}
       {bible && <>
-        {route.page === 'today' && current && <section className="today-layout">
+        {route.page === 'today' && current && <section className="today-layout"><div className="today-stack">
           <article className="verse-card" aria-label="오늘의 말씀">
             <div className="verse-card-heading"><h1 ref={heading} tabIndex={-1}>{reference(current).replace('장 ', ':').replace('절', '')}</h1><button className={`heart-button ${prefs.favorites.includes(current.id) ? 'saved' : ''}`} aria-label="즐겨찾기" onClick={() => toggle(current)}><AppIcon name="heart" filled={prefs.favorites.includes(current.id)} /></button></div>
             <blockquote style={{ fontSize: prefs.fontSize }}>{current.text}</blockquote>
@@ -123,20 +129,18 @@ export function App() {
             <div className="icon-actions"><button aria-label="다른 말씀 읽기" onClick={() => { setCurrent(randomVerse(bible.verses, current.id)); setManualText(''); setNotice('새로운 말씀을 골랐어요.'); }}><AppIcon name="refresh" /></button><button aria-label="말씀 공유" disabled={sharing} onClick={() => void shareVerse(current)}><AppIcon name="share" /></button></div>
           </article>
           {fontControls}
-        </section>}
+        </div></section>}
         {route.page === 'favorites' && <>
           <div className="favorites-toolbar"><p className="muted">마음에 담은 말씀 {prefs.favorites.length}개</p>{fontControls}</div>
           {prefs.favorites.length === 0 ? <div className="empty"><h2>즐겨찾기한 말씀이 없습니다.</h2><Button variant="weak" onClick={() => go('today')}>말씀 읽으러 가기</Button></div> : prefs.favorites.map(id => bible.byId.get(id)).filter((v): v is Verse => !!v).map(v => <article key={v.id} className="favorite-card"><div className="favorite-heading"><h2 className="reference">{reference(v).replace('장 ', ':').replace('절', '')}</h2><button className="heart-button saved" aria-label="즐겨찾기 삭제" onClick={() => toggle(v)}><AppIcon name="heart" filled /></button></div><p className="verse-text" style={{ fontSize: prefs.fontSize }}>{v.text}</p><div className="favorite-footer"><button onClick={() => go(`chapter/${encodeURIComponent(v.id)}`)}>전체 보기</button><button aria-label="말씀 공유" onClick={() => void shareVerse(v)}><AppIcon name="share" /></button></div></article>)}
-          <p className="footnote">이 기기에 저장돼요. 다른 기기나 테스트 환경에는 자동으로 동기화되지 않아요.</p>
         </>}
         {route.page === 'chapter' && (selected && chapter ? <section><ol className="chapter-list">{chapter.map(v => <li key={v.id} value={v.verse} className={v.id === selected.id ? 'selected' : ''}><span className="verse-number">{v.verse}</span><div><p className="verse-text" style={{ fontSize: prefs.fontSize }}>{v.text || '원본 데이터에 본문이 없는 구절이에요.'}</p></div></li>)}</ol></section> : <div className="empty"><p>찾을 수 없는 말씀이에요.</p><Button onClick={() => go('today')}>오늘의 말씀 보기</Button></div>)}
         {route.page === 'info' && <section className="info">
-          <h2>매일 한 구절, 가까이</h2><p>개역성경을 읽고 마음에 남는 말씀을 간직하세요.</p>
-          <div className="info-links"><Button variant="weak" color="dark" display="full" onClick={() => go('privacy')}>개인정보처리방침</Button><Button variant="weak" color="dark" display="full" onClick={() => go('licenses')}>오픈소스 안내</Button></div>
-          <h2>기기에 저장한 정보</h2><p>즐겨찾기와 글자 크기만 이 기기에 저장해요. 별도 계정이나 서버 동기화는 제공하지 않아요.</p>
-          <Button variant="weak" color="danger" onClick={() => setConfirmReset(true)}>저장한 정보 초기화</Button>
+          <div className="info-hero"><img src={appIconUrl} alt="오늘의 성경 앱 아이콘"/><div><h2>오늘의 성경</h2><p>매일 한 구절을 읽고 마음에 간직하세요.</p></div></div>
+          <div className="info-card"><h2>저장과 개인정보</h2><p>즐겨찾기와 글자 크기는 이 기기에만 저장돼요. 계정이나 서버로 전송하지 않으며 다른 기기와 자동 동기화되지 않아요.</p><div className="info-menu"><button onClick={() => go('privacy')}><span>개인정보처리방침</span><span aria-hidden="true">›</span></button><button onClick={() => go('licenses')}><span>오픈소스 안내</span><span aria-hidden="true">›</span></button></div></div>
+          <button className="reset-button" onClick={() => setConfirmReset(true)}>저장한 정보 초기화</button>
           {confirmReset && <div className="reset-confirm" role="group" aria-label="저장 정보 초기화 확인"><p>즐겨찾기 {prefs.favorites.length}개와 글자 크기를 초기화할까요? 삭제하면 되돌릴 수 없어요.</p><div className="actions"><Button variant="weak" color="dark" onClick={() => setConfirmReset(false)}>취소</Button><Button color="danger" onClick={() => { if (clearPreferences(browserStorage())) { setPrefs(defaults()); setNotice('저장한 정보를 초기화했어요.'); } else setNotice('저장한 정보를 삭제하지 못했어요. 다시 시도해 주세요.'); setConfirmReset(false); }}>초기화하기</Button></div></div>}
-          <p className="footnote">오늘의 성경 · 토스 미니앱 1.0.0<br/>문의: sonprojecta@gmail.com · 토스 상단 더보기의 문의하기에서도 문의할 수 있어요.</p>
+          <p className="info-footer">버전 1.0.0<br/>문의 sonprojecta@gmail.com</p>
         </section>}
         {route.page === 'privacy' && <section className="prose">
           <p>시행일: 2026년 9월 7일</p>

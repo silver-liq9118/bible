@@ -11,9 +11,10 @@ h1:focus { outline: none; }
 .app { width: min(100%, 636px); min-height: 100dvh; margin: auto; background: linear-gradient(180deg, #e4f1f6 0%, #f6fafb 42%, #fff 100%); }
 main { min-height: 100dvh; padding: 34px 28px calc(105px + var(--safe-bottom)); }
 .page-today main { padding: 0 28px calc(82px + var(--safe-bottom)); }
-.today-layout { position: relative; min-height: calc(100dvh - 82px - var(--safe-bottom)); }
-.today-layout .verse-card { position: absolute; top: 50%; left: 0; right: 0; transform: translateY(-50%); max-height: calc(100dvh - 250px - var(--safe-bottom)); overflow-y: auto; }
-.today-layout .font-controls { position: absolute; left: 0; right: 0; bottom: 24px; margin: 0 auto; }
+.today-layout { min-height: calc(100dvh - 82px - var(--safe-bottom)); display: flex; align-items: center; }
+.today-stack { width: 100%; transform: translateY(28px); }
+.today-layout .verse-card { max-height: calc(100dvh - 230px - var(--safe-bottom)); overflow-y: auto; }
+.today-layout .font-controls { margin: 26px auto 0; }
 .page-chapter { background: linear-gradient(180deg, #fff7c5 0%, #fffbee 48%, #fff 100%); }
 .page-heading { margin-bottom: 12px; }
 .eyebrow { color: #667780; font-size: 13px; font-weight: 700; margin: 0 0 8px; }
@@ -22,8 +23,8 @@ h2 { font-size: 22px; line-height: 1.5; }
 p { line-height: 1.65; }
 .muted, .footnote { color: #68777f; }
 .muted { font-size: 15px; }
-.status { color: #53636c; font-size: 13px; min-height: 22px; margin: 0 0 10px; text-align: center; }
-.page-today .status:empty { display: none; }
+.status { position: fixed; top: 18px; left: 50%; transform: translateX(-50%); z-index: 20; width: max-content; max-width: calc(100% - 40px); margin: 0; padding: 10px 15px; border-radius: 22px; background: rgba(36,43,48,.9); box-shadow: 0 5px 15px rgba(0,0,0,.14); color: #fff; font-size: 13px; text-align: center; }
+.status:empty { display: none; }
 .verse-card { background: rgba(255,255,255,.97); border: 1px solid rgba(255,255,255,.95); border-radius: 18px; padding: 28px 26px 20px; box-shadow: 0 12px 34px rgba(55,76,88,.14), 0 2px 8px rgba(55,76,88,.08); }
 .verse-card-heading { display: flex; align-items: center; gap: 16px; margin-bottom: 18px; }
 .verse-card-heading h1 { flex: 1; margin: 0; font-size: 28px; font-weight: 700; }
@@ -66,12 +67,26 @@ blockquote { margin: 0; line-height: 1.75; letter-spacing: -.35px; overflow-wrap
 .chapter-list li.selected { background: #fff2a8; }
 .verse-number { color: #69777e; font-size: 14px; padding-top: 8px; }
 .chapter-list .actions { margin: 10px 0 0; }
-.info-links { display: grid; gap: 12px; margin: 28px 0; }
-.info h2, .prose h2 { margin-top: 28px; }
-.info p, .prose p { color: #52616a; }
+.page-favorites .page-heading, .page-info .page-heading { margin-bottom: 16px; }
+.page-favorites .page-heading h1, .page-info .page-heading h1 { margin: 0; font-size: 24px; }
+.info { display: grid; gap: 18px; }
+.info-hero { display: flex; align-items: center; gap: 16px; padding: 18px; border-radius: 18px; background: rgba(255,255,255,.72); }
+.info-hero img { width: 70px; height: 70px; border-radius: 16px; box-shadow: 0 5px 14px rgba(42,50,56,.15); }
+.info-hero h2 { margin: 0 0 5px; font-size: 21px; }
+.info-hero p { margin: 0; color: #65747c; font-size: 14px; }
+.info-card { padding: 22px; border-radius: 18px; background: #fff; border: 1px solid #e3eaed; box-shadow: 0 5px 16px rgba(55,76,88,.08); }
+.info-card h2 { margin: 0 0 8px; font-size: 18px; }
+.info-card > p { margin: 0 0 16px; color: #596870; font-size: 14px; }
+.info-menu { border-top: 1px solid #edf0f2; }
+.info-menu button { width: 100%; display: flex; align-items: center; justify-content: space-between; min-height: 52px; padding: 0; border: 0; border-bottom: 1px solid #edf0f2; background: transparent; color: #202124; text-align: left; }
+.info-menu button span:last-child { color: #9aa2a7; font-size: 25px; font-weight: 300; }
+.reset-button { justify-self: start; padding: 9px 3px; border: 0; background: transparent; color: #d64e5f; font-size: 14px; }
+.info-footer { margin: 18px 0 0; color: #879197; font-size: 12px; line-height: 1.7; text-align: center; }
+.prose h2 { margin-top: 28px; }
+.prose p { color: #52616a; }
 .manual-share, .reset-confirm { margin: 20px 0; padding: 20px; border-radius: 16px; background: #fff; }
 .manual-share textarea { width: 100%; min-height: 170px; padding: 12px; border: 1px solid #b8c0c5; border-radius: 8px; background: #fff; color: #202124; line-height: 1.65; }
 .manual-share button { margin: 12px 8px 0 0; }
 .license { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; line-height: 1.7; color: #52616a; }
 @media (max-width: 359px) { main { padding-left: 18px; padding-right: 18px; } .page-today main { padding-left: 18px; padding-right: 18px; } .verse-card { padding: 24px 20px 18px; } .verse-card-heading h1 { font-size: 24px; } }
-@media (orientation: landscape) { .today-layout .verse-card { max-height: calc(100dvh - 130px); } .today-layout .font-controls { bottom: 8px; } }
+@media (orientation: landscape) { .today-stack { transform: none; } .today-layout .verse-card { max-height: calc(100dvh - 190px); } .today-layout .font-controls { margin-top: 16px; } }

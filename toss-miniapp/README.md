@@ -51,7 +51,7 @@ pnpm build
 ```
 
 - 개발은 `http://localhost:5173`. AIT 버튼에서 기기 프리셋·권한·공유·뒤로가기 mock을 확인합니다. SDK 3.x 기본 개발에 이전 `ait dev`/Metro/샌드박스 앱 설치는 필요 없습니다.
-- 빌드: 타입 검사 → Vite `dist/` → `<appName>.ait`. 기본 appName `todays-bible`은 개발용이며 **콘솔 등록 완료를 의미하지 않습니다**.
+- 빌드: 타입 검사 → Vite `dist/` → `<appName>.ait`. 기본 appName은 콘솔에서 확정한 `todaysbible`입니다.
 - 웹 빌드만 `pnpm build:web`, 프로덕션 웹 확인 `pnpm preview` (`http://localhost:4173`). 브릿지가 없는 일반 브라우저는 일반 TDS Provider와 공유 fallback을 사용합니다.
 - Devtools는 개발 서버에만 적용하며 `forceEnable`을 사용하지 않습니다. TDS 내부 SDK import까지 mock 처리하도록 Vite 사전 번들링 설정을 조정했습니다.
 - JSON은 원본 파일을 별도 정적 자산으로 번들에 포함하고 fetch합니다. 로딩 실패 시 다시 불러오기를 제공합니다. 번들은 압축 해제 후 100MB 이하이어야 합니다.
@@ -62,17 +62,38 @@ pnpm build
 PowerShell:
 
 ```powershell
-$env:TOSS_APP_NAME = '콘솔에서-확정한-appName'
+$env:TOSS_APP_NAME = 'todaysbible'
 pnpm build
 ```
 
 macOS/Linux:
 
 ```sh
-TOSS_APP_NAME='콘솔에서-확정한-appName' pnpm build
+TOSS_APP_NAME='todaysbible' pnpm build
 ```
 
-또는 `apps-in-toss.config.ts` 기본값을 확정 이름으로 수정하세요. SDK 설정은 셸 환경 변수를 읽고 `.env` 자동 로딩에 의존하지 않습니다. 이름 ‘오늘의 성경’과 실제 아이콘, 비게임 WebView 유형을 콘솔에 등록합니다. 토큰을 브라우저에 공개되는 `VITE_*`에 넣지 마세요.
+`apps-in-toss.config.ts`에도 같은 기본값이 들어 있습니다. SDK 설정은 셸 환경 변수를 읽고 `.env` 자동 로딩에 의존하지 않습니다. 이름 ‘오늘의 성경’과 실제 아이콘, 비게임 WebView 유형을 콘솔에 등록합니다. 토큰을 브라우저에 공개되는 `VITE_*`에 넣지 마세요.
+
+## 신규 사용자 유입 스마트 발송
+
+신규 유입 스마트 발송은 미니앱 번들에 푸시 SDK를 추가하는 기능이 아니라 앱인토스 콘솔에서 운영하는 광고성 캠페인입니다. 앱 안에서 `requestNotificationAgreement`를 호출하거나 파트너 서버를 구축할 필요가 없습니다. 공개 출시 후 아래 값으로 등록합니다.
+
+| 콘솔 항목 | 입력값 |
+| --- | --- |
+| 캠페인 제목 | `오늘의 성경 신규 유입` |
+| 목적 | `신규 유입 유도하기` |
+| 대상 | 미니앱을 써보지 않은 사용자 전체(첫 캠페인은 추가 조건 없음) |
+| 클릭 URL | `intoss://todaysbible` |
+| 발송 시점 | 검수 승인 후 바로 발송, 최소 14일 운영 권장 |
+
+소재는 한 그룹에 최대 2개까지 등록합니다. 광고성 캠페인은 동적 변수를 사용할 수 없습니다.
+
+| 소재 | 제목(공백 포함 7자 이하) | 본문(공백 포함 25자 이하) |
+| --- | --- | --- |
+| A | `오늘의 성경` | `마음에 담을 한 구절을 만나보세요.` |
+| B | `한 구절의 쉼` | `잠시 멈추고 오늘의 말씀을 읽어보세요.` |
+
+`intoss://todaysbible`은 앱의 홈 화면을 열며 신규 사용자에게 무작위 말씀 카드 하나를 보여 줍니다. 정식 출시 전에는 콘솔 QR의 비공개 주소로 번들을 확인하고, 공개 출시 후 실제 토스 앱에서 위 클릭 URL이 열리는지 확인한 다음 캠페인을 시작합니다. AI 테스트 발송은 최대 7일이며 클릭 25건 또는 발송 2,500건 중 하나를 충족하면 본 발송이 시작됩니다. 워크스페이스 발송 한도는 10만 건입니다.
 
 ## 토스 MCP
 
